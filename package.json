@@ -1,0 +1,43 @@
+{
+  "name": "amna-portfolio",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Architecture portfolio, CV and portfolio-PDF system for Amna, generated from a single source of truth.",
+  "engines": {
+    "node": ">=22.12.0"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "dev:sample": "node scripts/sample.mjs dev",
+    "build": "astro build && tsx scripts/check-dist.ts",
+    "build:sample": "node scripts/sample.mjs build",
+    "preview": "astro preview",
+    "check": "tsx scripts/check-profile.ts && astro check",
+    "images": "tsx scripts/import-images.ts",
+    "cv:build": "tsx scripts/build-cv.ts",
+    "cv:lint": "tsx scripts/lint-cv.ts",
+    "cv:docx": "tsx scripts/make-docx.ts",
+    "cv": "npm run cv:build && npm run cv:lint && npm run cv:docx",
+    "pdf": "tsx scripts/make-pdf.ts",
+    "linkedin": "tsx scripts/build-linkedin.ts",
+    "intake": "tsx scripts/build-intake.ts",
+    "applications": "tsx scripts/build-applications.ts",
+    "verify": "npm run check && npm run cv && npm run linkedin && npm run intake && npm run applications && npm run build",
+    "shots": "tsx scripts/shots.ts",
+    "format": "prettier --write src scripts data docs .github *.md *.json *.ts"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.3",
+    "astro": "^7.2.9"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.10",
+    "prettier": "^3.9.6",
+    "prettier-plugin-astro": "^0.14.1",
+    "tsx": "^4.23.12",
+    "typescript": "^6.0.3",
+    "yaml": "^2.9.0",
+    "zod": "^4.5.2"
+  }
+}

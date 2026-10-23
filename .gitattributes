@@ -1,0 +1,24 @@
+# Line-ending policy.
+#
+# Everything is normalized to LF in the repository AND checked out as LF, including on
+# Windows. This matters beyond tidiness: Git Bash refuses to run a script whose shebang
+# ends in CR (`#!/usr/bin/env bash^M` -> "bad interpreter: No such file or directory"),
+# so any shell script or git hook checked out with CRLF is silently broken. Declaring the
+# policy up front is far cheaper than diagnosing it later.
+* text=auto eol=lf
+
+# Belt and braces for the two categories that actually break when they get CRLF.
+*.sh   text eol=lf
+hooks/* text eol=lf
+
+# Binary assets — never touch these.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.webp binary
+*.avif binary
+*.ico  binary
+*.docx binary
+*.pdf  binary
+*.woff binary
+*.woff2 binary
