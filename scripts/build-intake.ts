@@ -1,0 +1,169 @@
+/**
+ * Generate `private/intake.md` — the confirm-or-correct sheet for Amna (via Nasik).
+ *
+ * Generated rather than written by hand so it cannot go stale: every unverified claim in the
+ * profile appears automatically, phrased as a question about a named degree, role, course or
+ * project rather than a schema path, so the list shrinks as answers land and can never
+ * disagree with what the build is actually missing.
+ *
+ * Written to the git-ignored `private/` folder, not `docs/`: it records what is unconfirmed and
+ * where her sources disagree, which is useful to her and should not sit in a public repository.
+ *
+ * Ordered by what each answer unlocks. Withheld projects first — an unanswered clearance hides
+ * a whole project. Then inferences already published, because those are live claims nobody
+ * has confirmed. Then missing facts, then numbers, then decisions only she can make.
+ */
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+
+import { SITE_URL_IS_PLACEHOLDER } from '../src/config/site';
+import { artifactDirs } from '../src/lib/files';
+import { collectGaps, type Gap } from '../src/lib/gaps';
+import { isPublishable, loadProfile, PROJECT_ROOT } from '../src/lib/profile';
+import type { Profile } from '../src/schema/profile';
+
+/** Plain-language names for fields, in the words a reply would use. */
+const FIELD: Record<string, string> = {
+  role: 'her role on it',
+  period: 'the year(s)',
+  status: 'its status',
+  location: 'where it was',
+  area: 'the covered or site area',
+  clearance: "the organisation's permission to publish it",
+  year: 'the year',
+  started: 'the year it started',
+  grade: 'the grade or marks',
+  distinction: 'the distinction',
+  number: 'the registration number',
+  result: 'the result',
+  date: 'the date',
+  survey: 'the number of survey respondents',
+  interviews: 'the number of interviews',
+};
+
+const flat = (text: string | undefined): string => (text ?? '').replace(/\s+/g, ' ').trim();
+
+/** Turn a gap's schema path into a question someone can answer without reading the schema. */
+function describe(profile: Profile, gap: Gap): string {
+  const field = (name: string | undefined): string => (name ? (FIELD[name] ?? name) : '');
+  let m = /^projects\[(\d+)\]\.research\.sample\.(\w+)/.exec(gap.path);
+  if (m) return `**${profile.projects[Number(m[1])]?.title}** — ${field(m[2])}`;
+  m = /^projects\[(\d+)\]\.(\w+)/.exec(gap.path);
+  if (m) return `**${profile.projects[Number(m[1])]?.title ?? gap.path}** — ${field(m[2])}`;
+  m = /^experience\[(\d+)\]\.highlights\[(\d+)\]/.exec(gap.path);
+  if (m) {
+    const role = profile.experience[Number(m[1])];
+    return `**${role?.title}, ${role?.organisation}** — a number for "${flat(role?.highlights[Number(m[2])]?.text)}"`;
+  }
+  m = /^experience\[(\d+)\]\.(\w+)/.exec(gap.path);
+  if (m) {
+    const role = profile.experience[Number(m[1])];
+    return `**${role?.title}, ${role?.organisation}** — ${field(m[2])}`;
+  }
+  m = /^education\[(\d+)\]\.(\w+)/.exec(gap.path);
+  if (m) {
+    const q = profile.education[Number(m[1])];
+    return `**${q?.degree}, ${q?.institution}** — ${field(m[2])}`;
+  }
+  m = /^registrations\[(\d+)\]\.(\w+)/.exec(gap.path);
+  if (m) return `**${profile.registrations[Number(m[1])]?.body}** — ${field(m[2])}`;
+  m = /^certifications\[(\d+)\]\.(\w+)/.exec(gap.path);
+  if (m) return `**Course: ${profile.certifications[Number(m[1])]?.title}** — ${field(m[2])}`;
+  m = /^events\[(\d+)\]\.(\w+)/.exec(gap.path);
+  if (m) return `**${profile.events[Number(m[1])]?.title}** — ${field(m[2])}`;
+  m = /^recognition\[(\d+)\]\.(\w+)/.exec(gap.path);
+  if (m) return `**${profile.recognition[Number(m[1])]?.title}** — ${field(m[2])}`;
+  if (gap.path === 'research.interests')
+    return '**Research interests** — are these the questions she wants to pursue next?';
+  m = /^person\.links\.(\w+)/.exec(gap.path);
+  if (m) return `**${m[1]![0]!.toUpperCase()}${m[1]!.slice(1)} URL**`;
+  return `\`${gap.path}\``;
+}
+
+function main(): void {
+  const profile = loadProfile();
+  const dirs = artifactDirs(profile);
+  const gaps = collectGaps(profile);
+  const withheld = profile.projects.filter((project) => !isPublishable(project));
+  const assumed = gaps.filter((g) => g.state === 'assumed');
+  const missing = gaps.filter((g) => g.state === 'missing');
+  const metrics = missing.filter((g) => g.path.includes('.metric'));
+  const facts = missing.filter(
+    (g) => !g.path.includes('.metric') && !g.path.endsWith('.clearance'),
+  );
+  const review = existsSync(resolve(PROJECT_ROOT, dirs.private, 'thesis-review.md'));
+
+  const line = (g: Gap): string =>
+    `- [ ] ${describe(profile, g)}\n      _${flat(g.basis) || 'Not known yet.'}_`;
+  const shown = (v: unknown): string => (Array.isArray(v) ? v.join('; ') : String(v));
+
+  const doc = `# Intake — what still needs Amna's confirmation
+
+<!-- Generated by scripts/build-intake.ts from the profile. Do not edit by hand: answer the
+     questions, update data/profile.yaml, and run \`npm run intake\`. The list shrinks on its own.
+     Private: this folder is git-ignored. -->
+
+Nothing here blocks a build. The site, the CVs and the portfolio PDF all generate today; this is
+what would make them complete and correct, in the order each answer unlocks the most.
+
+**The rule these follow:** no year, grade, area, result, registration number, sample size or
+publication permission is ever inferred. The schema rejects an assumed one at parse time, so an
+unanswered question shows up as an omission, never as a plausible guess.
+${review ? '\nWhere her sources disagree with each other, the detail is in `thesis-review.md` beside this file.\n' : ''}
+---
+
+## 1. Projects not on the site yet (${withheld.length})
+
+Validated, but on no page, PDF or CV until the question is answered.
+
+${withheld.length ? withheld.map((p) => `- [ ] **${p.title}** — ${p.draft ? 'draft: needs images (drawings, renders, photographs) before it can be shown' : `may ${p.organisation}'s work be published? Who agreed, and how?`}`).join('\n') : '_None — every project is publishable._'}
+
+## 2. Inferences already published — confirm or correct (${assumed.length})
+
+Read from her CV or thesis rather than confirmed by her. They ship, with the reasoning recorded,
+but each is a live claim until she says it is right.
+
+${assumed.length ? assumed.map((g) => `- [ ] ${describe(profile, g)}: currently **"${shown(g.value)}"**\n      _Basis: ${flat(g.basis)}_`).join('\n') : '_None._'}
+
+## 3. Facts not known yet (${facts.length})
+
+Omitted from every page and document until supplied.
+
+${facts.length ? facts.map(line).join('\n') : '_None._'}
+
+## 4. Numbers (${metrics.length})
+
+A bullet with a figure is remembered; one without is a responsibility, not a result. Rough is
+fine — "around a dozen schools", "four districts" — a number nobody checked is not.
+
+${metrics.length ? metrics.map(line).join('\n') : '_None._'}
+
+## 5. Decisions and material only she can supply
+
+${SITE_URL_IS_PLACEHOLDER ? '- [ ] **GitHub username** — the site will live at `https://<username>.github.io`.\n' : ''}- [ ] **Project images** — renders, drawings, site photographs from her practice and her B.Arch
+      thesis. An architecture portfolio is judged on images first; today only the M.Arch thesis has any.
+- [ ] **Her thesis fieldwork photographs** — the method describes an extensive photographic survey
+      of the four sites; none is in the thesis PDF. They would make the research page visual.
+- [ ] **The roles and scholarships she is targeting** — they decide the CV headlines, summaries and
+      which projects lead.
+- [ ] **Anything that must not be public** — a client's name, a site address, a project.
+
+---
+
+## How an answer lands
+
+Edit \`data/profile.yaml\`, or send the answers and they will be entered. A claim moves from
+\`state: missing\` to \`state: verified\` with its \`value\`, then \`npm run verify\` regenerates
+every artifact at once.
+`;
+
+  const outDir = resolve(PROJECT_ROOT, dirs.private);
+  mkdirSync(outDir, { recursive: true });
+  writeFileSync(resolve(outDir, 'intake.md'), doc, 'utf8');
+  console.log(
+    `  ${dirs.private}/intake.md — ${withheld.length} withheld, ${assumed.length} assumed, ` +
+      `${facts.length} missing facts, ${metrics.length} numbers\n`,
+  );
+}
+
+main();
