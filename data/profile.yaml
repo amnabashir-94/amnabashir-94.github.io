@@ -1,0 +1,702 @@
+# ─────────────────────────────────────────────────────────────────────────────────────
+#  Amna Bashir — single source of truth.
+#
+#  Every generated artifact reads from this file and nothing else: the site, the project and
+#  research pages, the portfolio PDF, both CVs, the plain-text and LLM surfaces, the LinkedIn
+#  pack, and the private intake sheet and applications pack. Change a fact here and it changes
+#  everywhere.
+#
+#  Sources: her CV (2 pages) and her M.Arch thesis (Draft II, 2025). Facts stated in either are
+#  `verified`; facts read between the lines are `assumed`, with the reasoning; facts in neither
+#  are `missing`. Years, grades, areas, results, registration numbers, sample sizes and
+#  clearances can never be `assumed` — see src/schema/claim.ts. `npm run check` lists the gaps.
+#
+#  Decided 2026-10-23: email only — her phone number is deliberately not in this file.
+# ─────────────────────────────────────────────────────────────────────────────────────
+
+person:
+  name: Amna Bashir
+  headline: Architect
+  statement: >-
+    I design public buildings for the Government of Punjab, and research how Lahore's parks,
+    markets and mosques can work for everyone who uses them — women included.
+  email: ar.amnabashir@gmail.com
+  location:
+    city: Lahore
+    country: Pakistan
+    countryCode: PK
+  availability: >-
+    Open to architecture and urban-design roles, and to funded postgraduate study in urban
+    design and the planning of inclusive public space.
+  links:
+    linkedin:
+      state: assumed
+      value: https://www.linkedin.com/in/amna-bashir-9ab312103/
+      basis: >-
+        Read from her CV, where the address breaks across a line after "am-"; that hyphen is
+        taken as a line-break hyphen rather than part of the address.
+
+about:
+  - >-
+    I am an architect in Lahore. Since 2022 I have worked as Assistant Director Architecture in
+    the Punjab Architecture Department of the Communication & Works Department, designing and
+    managing public building projects for the Government of Punjab. I graduated from Lahore
+    College for Women University as the gold medallist of the Bachelor of Architecture.
+  - >-
+    Before government service I spent three years as an architect at Kazmain Design & Interior
+    Contractors, leading design projects for private clients and seeing them through
+    construction, while teaching architectural design as a visiting lecturer in the department
+    where I had studied.
+  - >-
+    My master's research at the University of Engineering and Technology, Lahore, asks what the
+    COVID-19 pandemic changed about how people use the city's parks, markets and mosques — and
+    found that in the neighbourhoods I studied, those spaces were never equally open to women.
+    Designing and planning public space that works for everyone who depends on it is the work I
+    want to do next.
+
+featured:
+  - covid-public-spaces-lahore
+
+projects:
+  - id: covid-public-spaces-lahore
+    title: Implications of COVID-19 Pandemic on Behavioural Patterns of Users of Public Spaces in Lahore
+    context: academic
+    organisation: Department of Architecture, University of Engineering and Technology, Lahore
+    role:
+      state: verified
+      value: Sole researcher and author
+      basis: Statement of originality in the thesis.
+    credits: Supervised by Dr. Maryam Siddiq, Department of Architecture, UET Lahore.
+    period:
+      state: verified
+      value: '2025'
+      basis: Year on the thesis cover.
+    status:
+      state: verified
+      value: academic
+    location:
+      state: verified
+      value: Lahore, Pakistan
+    typology: [Urban research, Public space]
+    summary: >-
+      How the COVID-19 pandemic changed the way people in four Lahore neighbourhoods use their
+      parks, markets and mosques — and what it revealed about who those spaces were built for.
+    brief: >-
+      When the pandemic closed Lahore's public spaces, it showed how much daily life depends on
+      them, and how little was known about how residents actually use them. This thesis set out
+      to record what changed in the parks, markets and mosques of four Lahore Development
+      Authority housing schemes, before and during COVID-19: how often people came, what they
+      did there, how safe they felt, and whether the spaces served women and men equally.
+    approach:
+      - >-
+        A mixed-methods study. Activities in each space were classified, after Jan Gehl, as
+        necessary, optional or social, and the physical and social dimensions of parks,
+        markets and mosques were broken down into measurable indicators — lighting,
+        surveillance, entrances, seating, group sizes, frequency of visits — so that change
+        could be compared like with like, before the pandemic and during it.
+      - >-
+        Fieldwork in Mustafa Town, Shadbagh, Gulshan-e-Ravi and Tajpura combined a
+        questionnaire in English and Urdu, in-depth interviews, observation at different times
+        of day, a photographic survey and land-use mapping, set against Google's Community
+        Mobility Reports for Lahore as a city-wide baseline.
+    outcome: >-
+      The thesis closes with site-specific recommendations for the Lahore Development Authority
+      — from women-led safety audits and better-lit, more open park layouts to prayer areas and
+      separate entrances for women in neighbourhood mosques — and a set of design principles for
+      public space after the pandemic.
+    cover: four-lda-schemes-site-map.jpg
+    images:
+      - file: four-lda-schemes-site-map.jpg
+        kind: diagram
+        alt: >-
+          Satellite map of Lahore with the four surveyed housing schemes — Shadbagh, Tajpura,
+          Gulshan-e-Ravi and Mustafa Town — outlined in red and marked with pins.
+        caption: The four LDA housing schemes studied
+        credit: Base imagery Google Earth; annotation by Amna Bashir
+    research:
+      degree: M.Arch thesis
+      supervisor: Dr. Maryam Siddiq
+      questions:
+        - >-
+          How did the use of Lahore's public spaces change before and during the COVID-19
+          pandemic, and what drove those changes?
+        - How did the pandemic change the way people behave in public space?
+        - >-
+          How did users perceive the safety, attractiveness and usability of public spaces
+          before and during the pandemic?
+        - >-
+          To what extent are Lahore's public spaces androcentric — designed around men — and
+          did the pandemic deepen that bias?
+        - >-
+          What changes to policy and management would make public spaces more resilient to
+          future health crises?
+      methods:
+        - label: Survey
+          text: >-
+            A structured questionnaire in English and Urdu, with closed and Likert-scale
+            questions on how often and why residents used parks, markets and mosques and how
+            safe they felt, asked for the period before the pandemic and during it. Collected in
+            person, with COVID-19 precautions, from 24 June to 6 July 2022.
+        - label: Interviews
+          text: >-
+            Semi-structured interviews with women, men and young people aged 15 to 55, held in
+            Urdu between 6 and 21 July 2022, transcribed into English and analysed thematically.
+        - label: Observation
+          text: >-
+            Non-participant observation at a park, a market and a mosque in each scheme over
+            several weeks, at different times of day and week — recording group sizes,
+            distancing, mask use and the activities taking place.
+        - label: Spatial analysis
+          text: >-
+            Land-use maps, satellite base maps, a visual audit and a photographic survey of each
+            site, read against Google Community Mobility Reports for Lahore from March, May and
+            July 2020.
+      sample:
+        survey:
+          state: missing
+          basis: Respondent count to confirm against the final thesis.
+        interviews:
+          state: verified
+          value: around 60
+          basis: Thesis §3.3.6.
+      sites: [Mustafa Town, Shadbagh, Gulshan-e-Ravi, Tajpura]
+      findings:
+        - label: Parks mattered more
+          text: >-
+            Walking and exercise rose in all four parks during the pandemic while lingering and
+            gathering fell: parks became places for physical and mental health rather than for
+            socialising, and residents with little private outdoor space relied on them most.
+        - label: Markets shrank to transactions
+          text: >-
+            Every kind of market activity fell. Shopping became planned, quick and increasingly
+            contactless, women withdrew from markets without visible safety measures, and
+            informal vendors bore the economic loss.
+        - label: A gendered wall around the mosque
+          text: >-
+            Men's attendance fell and worship adapted — ablution at home, distanced rows, verbal
+            greetings in place of handshakes. Women were already excluded: none of the surveyed
+            mosques had a prayer area for women, so the pandemic revealed that exclusion rather
+            than causing it.
+        - label: Safety felt unequally
+          text: >-
+            Men largely felt safe in the parks; women avoided poorly lit parks in the evening. The
+            pandemic acted as both a mirror and a magnifier of the gender inequities already
+            built into these spaces.
+        - label: What makes a space feel safe changed
+          text: >-
+            Before the pandemic users judged public space by lighting, surveillance and
+            amenities; during it, by openness, distance from others and the risk of exposure.
+      recommendations:
+        - label: Women-led safety audits
+          text: >-
+            Audit neighbourhood parks and markets with women, to find the dark corners, single
+            gates and missing facilities that keep them away.
+        - label: Light, sightlines and exits
+          text: >-
+            Reliable solar LED lighting, trimmed planting, transparent boundaries and more than
+            one entrance, so that no one feels trapped.
+        - label: Activity zoning
+          text: >-
+            Family zones near entrances, walking tracks along open edges and quiet green corners,
+            so women can choose where they feel comfortable.
+        - label: Women in mosques
+          text: >-
+            Prayer areas, separate well-lit entrances and ablution spaces for women in new and
+            existing mosques, and women on mosque committees.
+        - label: Measure who comes
+          text: >-
+            Track women's use of each space for six to twelve months after every intervention,
+            so design decisions are judged by who actually uses the result.
+
+experience:
+  - id: punjab-architecture-department
+    title: Assistant Director Architecture (CAD)
+    organisation: Punjab Architecture Department, Communication & Works Department, Government of Punjab
+    organisationContext: The provincial department that designs and delivers the Government of Punjab's public buildings.
+    location:
+      state: assumed
+      value: Lahore, Pakistan
+      basis: The department is based in Lahore; her CV does not state the city.
+    start: 2022-03
+    summary: >-
+      Public-sector architect in the provincial department responsible for government buildings:
+      designing and managing public projects and overseeing their construction.
+    highlights:
+      - text: >-
+          Design and manage public building projects for the Government of Punjab, ensuring
+          compliance with building regulations and government standards.
+        tags: [design-development, authority-approvals, public-sector]
+        metric:
+          state: missing
+          basis: The number, type or value of projects designed or managed would carry this bullet.
+      - text: >-
+          Coordinate with stakeholders and oversee construction on site, keeping public projects
+          to standard through to completion.
+        tags: [consultant-coordination, site-supervision, public-sector, project-management]
+      - text: >-
+          Uphold standards for sustainable, functional architecture in community and government
+          infrastructure projects.
+        tags: [sustainability, public-sector]
+
+  - id: kazmain
+    title: Architect
+    organisation: Kazmain Design & Interior Contractors
+    organisationContext: A design and interior contracting firm working for private clients.
+    location:
+      state: assumed
+      value: Lahore, Pakistan
+      basis: Not stated on her CV; assumed from her other roles and studies, all in Lahore.
+    start: 2019-03
+    end: 2022-02
+    summary: >-
+      Architect at a design-and-build interiors firm, leading client projects from design
+      through to construction.
+    highlights:
+      - text: >-
+          Led design projects for private clients, developing customised architectural and
+          interior solutions to each client's brief.
+        tags: [concept-design, interior-design, client-liaison]
+        metric:
+          state: missing
+          basis: The number or kind of projects led would carry this bullet.
+      - text: >-
+          Managed construction processes and timelines, delivering spaces to the client's vision
+          and to industry standards.
+        tags: [site-supervision, project-management]
+
+  - id: lcwu-visiting-lecturer
+    title: Visiting Lecturer
+    organisation: Department of Architecture, Lahore College for Women University
+    organisationContext: A public women's university in Lahore — the department where she studied architecture.
+    location:
+      state: verified
+      value: Lahore, Pakistan
+    start: 2019-08
+    end: 2022-02
+    summary: >-
+      Taught architectural design alongside practice, in the department where she had earned
+      her Bachelor of Architecture.
+    highlights:
+      - text: >-
+          Taught architectural design courses, bringing current practice into the studio
+          alongside full-time work as an architect.
+        tags: [teaching]
+      - text: >-
+          Mentored aspiring architects and contributed to curriculum development in the
+          department.
+        tags: [teaching]
+
+  - id: allied-engineering
+    title: Architecture Intern
+    organisation: Allied Engineering Consultants
+    organisationContext: An engineering consultancy; projects included university campuses under construction.
+    location:
+      state: assumed
+      value: Lahore, Pakistan
+      basis: Not stated on her CV; assumed because she was studying in Lahore at the time.
+    start: 2016-08
+    end: 2016-09
+    summary: >-
+      Summer internship across planning, interior and landscape design, drafting and
+      presentation, including campus projects under construction.
+    highlights:
+      - text: >-
+          Worked across building planning, interior and landscape design, drafting and 3D
+          illustration, including on university campuses under construction.
+        tags: [design-development, visualisation, construction-documents]
+      - text: >-
+          Prepared mood boards, sample boards and presentations for client proposals.
+        tags: [visualisation, client-liaison]
+
+  - id: unicon
+    title: Architecture Intern
+    organisation: UNICON Consulting Service
+    organisationContext: A consultancy working on residential projects.
+    location:
+      state: assumed
+      value: Lahore, Pakistan
+      basis: Not stated on her CV; assumed because she was studying in Lahore at the time.
+    start: 2015-08
+    end: 2015-09
+    summary: >-
+      Summer internship on residential projects, from research and concept design to complete
+      submission and working drawings.
+    highlights:
+      - text: >-
+          Carried out project research, data collection and conceptual design for residential
+          projects.
+        tags: [research, concept-design]
+      - text: >-
+          Detailed residential buildings, preparing complete sets of submission and working
+          drawings.
+        tags: [construction-documents, authority-approvals]
+
+education:
+  - degree: Master of Architecture (M.Arch)
+    institution: University of Engineering and Technology, Lahore
+    location: Lahore, Pakistan
+    started:
+      state: verified
+      value: 2019
+      basis: Her CV and her university registration number.
+    year:
+      state: missing
+      basis: Year of award, once the thesis is defended.
+    status:
+      state: verified
+      value: thesis submitted
+      basis: Confirmed by Nasik, 2026-10-23 — submitted, awaiting defence.
+    grade:
+      state: missing
+      basis: M.Arch grade or CGPA, once awarded.
+    thesis: Implications of COVID-19 Pandemic on Behavioural Patterns of Users of Public Spaces in Lahore
+    thesisProject: covid-public-spaces-lahore
+    supervisor: Dr. Maryam Siddiq
+
+  - degree: Bachelor of Architecture (B.Arch)
+    institution: Lahore College for Women University
+    location: Lahore, Pakistan
+    started:
+      state: verified
+      value: 2012
+    year:
+      state: verified
+      value: 2017
+    status:
+      state: verified
+      value: completed
+    grade:
+      state: verified
+      value: 80.7% · CGPA 3.67
+      basis: Her CV.
+    distinction:
+      state: verified
+      value: Gold medallist
+      basis: Her CV.
+    thesis: Living Vertical — Towards High-rise Development
+
+  - degree: F.Sc. Pre-Engineering (Higher Secondary School Certificate)
+    level: secondary
+    institution: Punjab College of Sciences
+    location: Lahore, Pakistan
+    started:
+      state: verified
+      value: 2009
+    year:
+      state: verified
+      value: 2011
+    grade:
+      state: verified
+      value: 70% · Grade A · First Division
+
+  - degree: Matriculation (Secondary School Certificate)
+    level: secondary
+    institution: Kinnaird Academy
+    location: Lahore, Pakistan
+    started:
+      state: verified
+      value: 2007
+    year:
+      state: verified
+      value: 2009
+    grade:
+      state: verified
+      value: 82% · Grade A+ · First Division
+
+registrations:
+  - title: Member
+    body: Pakistan Council of Architects and Town Planners (PCATP)
+    number:
+      state: verified
+      value: A-07057
+    year:
+      state: missing
+      basis: Registration year to confirm.
+  - title: Member
+    body: Institute of Architects, Pakistan (IAP)
+    number:
+      state: verified
+      value: A-2353-22
+    year:
+      state: missing
+      basis: Membership year to confirm; the number's suffix suggests 2022.
+
+certifications:
+  - title: 'Autodesk Certified Professional: Revit for Architectural Design Exam Prep'
+    kind: course
+    issuer: Autodesk
+    via: Coursera
+    status:
+      state: verified
+      value: completed
+    year:
+      state: missing
+      basis: Year completed to confirm.
+  - title: 'Beyond the Sustainable Development Goals (SDGs): Addressing Sustainability and Development'
+    kind: course
+    issuer: University of Michigan
+    via: Coursera
+    status:
+      state: verified
+      value: completed
+    year:
+      state: missing
+      basis: Year completed to confirm.
+  - title: Cities and Climate Change
+    kind: module
+    issuer: UN CC:Learn
+    status:
+      state: assumed
+      value: completed
+      basis: Her CV lists it as a certified module without saying it is complete.
+    year:
+      state: missing
+      basis: Year completed to confirm.
+  - title: 'Greening the Economy: Sustainable Cities'
+    kind: course
+    issuer: Lund University
+    via: Coursera
+    status:
+      state: verified
+      value: completed
+    year:
+      state: missing
+      basis: Year completed to confirm.
+  - title: Project Management Principles and Practices
+    kind: specialisation
+    issuer: University of California, Irvine
+    via: Coursera
+    status:
+      state: assumed
+      value: in progress
+      basis: Listed as in progress on her CV; it may since be complete.
+    year:
+      state: missing
+      basis: Year to confirm, if complete.
+
+events:
+  - kind: conference
+    title: 2nd International Conference on Architecture Education Towards Disaster Mitigation
+    organiser: Disaster Risk Management Unit, PSBA Manila (Philippines), and the Department of Architecture, Lahore College for Women University
+    role: organiser and participant
+    date:
+      state: missing
+      basis: Year to confirm.
+  - kind: workshop
+    title: 2nd International Workshop on High Performance Energy Efficient Building Design & Construction
+    organiser: Department of Architectural Engineering, UET Lahore
+    role: participant
+    date:
+      state: missing
+      basis: Year to confirm.
+  - kind: workshop
+    title: Disaster Risk Reduction Workshop
+    organiser: Earthquake Reconstruction and Rehabilitation Authority (ERRA), Islamabad
+    venue: Lahore College for Women University
+    role: attendee
+    date:
+      state: missing
+      basis: Year to confirm.
+  - kind: lecture series
+    title: Planning for Climate Change and Rapid Urbanization — CPD lecture series for professionals
+    organiser: Commonwealth Association of Architects (CAA)
+    role: attendee
+    date:
+      state: verified
+      value: 2 Jul – 13 Aug 2020
+  - kind: training
+    title: ProQuest online training sessions
+    organiser: Higher Education Commission, Pakistan
+    role: attendee
+    date:
+      state: verified
+      value: 10–19 Aug 2020
+  - kind: webinar
+    title: Metropolis webinars
+    organiser: Metropolis Magazine
+    role: attendee
+    date:
+      state: missing
+      basis: Year to confirm.
+    sessions: ['The Pandemic is a Portal: The Outdoors', 'Designing for a Circular Economy']
+
+recognition:
+  - kind: award
+    title: Gold Medal, Bachelor of Architecture
+    issuer: Lahore College for Women University
+    year:
+      state: missing
+      basis: Year awarded to confirm; the degree was completed in 2017.
+
+research:
+  summary:
+    - >-
+      My research asks what Lahore's public spaces are for, and for whom. My M.Arch thesis at the
+      University of Engineering and Technology, Lahore, traced how the COVID-19 pandemic changed
+      the use of parks, markets and mosques in four Lahore Development Authority housing schemes,
+      combining a bilingual survey, in-depth interviews, observation and mapping.
+    - >-
+      Its sharpest finding is that the pandemic did not so much create inequality in public space
+      as expose it: in the neighbourhoods studied, women were already absent from mosques and wary
+      of poorly lit parks and crowded markets, and the crisis made that visible. The thesis ends in
+      concrete recommendations for the city's development authority — and in the question I want
+      to pursue next: how to design public space that is safe, healthy and open to everyone.
+  interests:
+    state: assumed
+    value:
+      - Gender-inclusive public space
+      - Health-resilient cities after the pandemic
+      - Behaviour in public space
+      - Public space policy and management
+      - Climate change and sustainable cities
+    basis: >-
+      Read from the themes of her M.Arch thesis and the courses on her CV; to confirm as the
+      directions she wants to pursue.
+  motivation: >-
+    It began at my window. Stranded at home in the first months of the pandemic, I watched the
+    service road outside — normally a through-route from a busy commercial area — empty of cars,
+    of people, of noise. Then, slowly, it filled again: people jogging, then cycling, children
+    playing, neighbours celebrating birthdays on the pavement. That space became my own escape
+    from the house, and I began to realise what a privilege it was to have open space nearby
+    where I felt safe. My thesis asks what public space meant for everyone else in the city.
+
+proofPoints:
+  - label: Gold medallist
+    text: >-
+      Awarded the gold medal for the Bachelor of Architecture at Lahore College for Women
+      University, graduating in 2017 with 80.7% and a CGPA of 3.67.
+  - label: Architect in public service
+    text: >-
+      Assistant Director Architecture in the Punjab Architecture Department since 2022,
+      designing and managing public building projects for the Government of Punjab.
+  - label: Field research on public space
+    text: >-
+      An M.Arch thesis built on a bilingual survey, around sixty interviews and observation
+      across four Lahore neighbourhoods, showing who the city's parks, markets and mosques leave
+      out.
+  - label: Teacher and organiser
+    text: >-
+      Taught architectural design as a visiting lecturer for two and a half years, and
+      co-organised an international conference on architecture education for disaster
+      mitigation.
+
+competencies:
+  - label: Architectural design
+    tags: [concept-design, design-development, interior-design]
+    items:
+      - Concept and design development
+      - Building planning
+      - Interior and landscape design
+      - Client briefs and presentations
+  - label: Delivery and public-sector practice
+    tags:
+      [
+        construction-documents,
+        authority-approvals,
+        site-supervision,
+        public-sector,
+        project-management,
+      ]
+    items:
+      - Submission and working drawings
+      - Regulatory compliance for public buildings
+      - Construction oversight
+      - Stakeholder coordination
+  - label: Research methods
+    tags: [research]
+    items:
+      - Mixed-methods research design
+      - Bilingual survey design (English and Urdu)
+      - Semi-structured interviews and thematic analysis
+      - Observation and photographic survey
+      - Land-use mapping and spatial analysis
+  - label: Urban themes
+    tags: [urban-design, sustainability, research]
+    items:
+      - Gender-inclusive public space
+      - Public space after the pandemic
+      - Climate change and sustainable cities
+      - Disaster risk reduction
+  - label: Teaching
+    tags: [teaching]
+    items:
+      - Architectural design teaching
+      - Mentoring students
+      - Curriculum development
+  - label: Professional skills
+    tags: [project-management, client-liaison]
+    items:
+      - Coordination
+      - Negotiation
+      - Decision making
+      - Problem solving
+
+software:
+  - label: Drafting and BIM
+    items: [AutoCAD, Revit]
+  - label: 3D modelling
+    items: [SketchUp]
+  - label: Graphics and presentation
+    items: [Adobe Photoshop, Adobe Illustrator, Prezi]
+  - label: Office
+    items: [Microsoft Office]
+
+languages:
+  - name: English
+    proficiency: Professional proficiency
+  - name: Urdu
+    proficiency: Fluent
+  - name: Punjabi
+    proficiency: Mother tongue
+
+variants:
+  - id: general
+    label: General
+    kind: professional
+    filename: Amna-Bashir-CV
+    headline: Architect
+    targetTitles: [Architect, Project Architect, Design Architect]
+    leadTags: [design-development, concept-design, public-sector, site-supervision]
+    keywords:
+      - Public building projects
+      - Design development
+      - Construction oversight
+      - Regulatory compliance
+      - AutoCAD
+      - Revit
+    summary: >-
+      Architect with public- and private-sector experience in Lahore: Assistant Director
+      Architecture in the Punjab Architecture Department since 2022, designing and managing public
+      building projects and overseeing their construction, after three years leading client
+      projects from design to completion at a design-and-build interiors firm. Gold medallist in
+      the Bachelor of Architecture (CGPA 3.67), former visiting lecturer in architectural design,
+      and M.Arch researcher on how Lahore's public spaces serve the people who use them. Works in
+      AutoCAD, Revit, SketchUp, Photoshop and Illustrator.
+
+  - id: academic
+    label: Academic / Scholarship
+    kind: academic
+    filename: Amna-Bashir-CV-Academic
+    headline: Architect and urban researcher
+    targetTitles:
+      - Postgraduate scholarships in architecture and urban design
+      - PhD and research master's programmes
+      - Research assistantships
+    leadTags: [research, teaching, urban-design, public-sector]
+    maxHighlightsPerRole: 3
+    maxCompetencyGroups: 3
+    keywords:
+      - Public space
+      - Gender-inclusive design
+      - Mixed-methods research
+      - Urban resilience
+    summary: >-
+      Architect and urban researcher from Lahore. M.Arch research at the University of
+      Engineering and Technology, Lahore, on how the COVID-19 pandemic changed the use of parks,
+      markets and mosques in four Lahore neighbourhoods: a mixed-methods study combining a
+      bilingual survey, in-depth interviews, observation and mapping, which found that the
+      pandemic exposed the long-standing exclusion of women from public space, and which ends in
+      recommendations for the city's development authority. Gold medallist in the Bachelor of
+      Architecture (CGPA 3.67), visiting lecturer in architectural design for two and a half
+      years, and a public-sector architect with the Government of Punjab since 2022. Seeks funded
+      postgraduate study in urban design and the planning of inclusive public space.
