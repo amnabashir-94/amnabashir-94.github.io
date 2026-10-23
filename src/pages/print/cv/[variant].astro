@@ -1,0 +1,120 @@
+---
+/**
+ * Print-only CV route. Not linked from anywhere, noindexed, and out of the sitemap.
+ *
+ * The PDF is printed from here rather than from `/cv` so there is no site chrome to hide —
+ * a print stylesheet that silently fails to hide the navigation produces a CV with a website's
+ * furniture baked into it, which nobody notices until a firm has it. Typography is set for
+ * paper here rather than for a screen being coerced into paper.
+ */
+import type { GetStaticPaths } from 'astro';
+
+import CvDocument from '../../../components/CvDocument.astro';
+import { loadProfile } from '../../../lib/profile';
+import '../../../styles/global.css';
+
+export const getStaticPaths = (() => {
+  const profile = loadProfile();
+  return profile.variants.map((variant) => ({
+    params: { variant: variant.id },
+    props: { variant },
+  }));
+}) satisfies GetStaticPaths;
+
+const { variant } = Astro.props;
+const profile = loadProfile();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{profile.person.name} — CV — {variant.label}</title>
+  </head>
+  <body class="print-page">
+    <CvDocument variant={variant} />
+  </body>
+</html>
+
+<style is:global>
+  /*
+   * Paper typography. Tighter than the screen because a CV is read in one pass, and every line
+   * of white space costs a line of substance on the second page. Colours are forced light: a
+   * dark-scheme machine must not print white on white.
+   */
+  @page {
+    size: A4;
+    margin: 13mm 14mm;
+  }
+
+  html,
+  body.print-page {
+    --paper: #fff;
+    --ink: #000;
+    --ink-muted: #333;
+    --rule: #999;
+    --accent: #7a3a20;
+    background: #fff;
+    color: #000;
+    margin: 0;
+    font-size: 9.6pt;
+    line-height: 1.33;
+    color-scheme: light;
+  }
+
+  body.print-page .cv {
+    max-width: none;
+  }
+  body.print-page .cv__head {
+    border-bottom: 1.5pt solid #000;
+    padding-bottom: 5pt;
+    margin-bottom: 9pt;
+  }
+  body.print-page .cv__name {
+    font-size: 20pt;
+    margin-bottom: 1pt;
+  }
+  body.print-page .cv__title {
+    font-size: 10pt;
+    margin-bottom: 2pt;
+  }
+  body.print-page .cv__contact {
+    font-size: 8.4pt;
+    color: #222;
+  }
+  body.print-page .cv__section {
+    margin-bottom: 7pt;
+  }
+  body.print-page .cv__section h2 {
+    font-size: 7.6pt;
+    color: #000;
+    border-bottom: 0.5pt solid #666;
+    padding-bottom: 1.5pt;
+    margin-bottom: 5pt;
+  }
+  body.print-page .cv__role {
+    margin-bottom: 7pt;
+    break-inside: avoid;
+  }
+  body.print-page .cv__role h3 {
+    font-size: 10.2pt;
+    margin-bottom: 0;
+  }
+  body.print-page .cv__meta {
+    font-size: 8.4pt;
+    color: #222;
+    margin-bottom: 2.5pt;
+  }
+  body.print-page .cv__list,
+  body.print-page .cv__plain {
+    font-size: 9.3pt;
+  }
+  body.print-page .cv__list {
+    padding-left: 12pt;
+  }
+  body.print-page .cv__list li {
+    margin-bottom: 1.3pt;
+  }
+</style>

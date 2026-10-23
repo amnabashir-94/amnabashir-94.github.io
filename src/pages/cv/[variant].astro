@@ -1,0 +1,47 @@
+---
+/**
+ * A role-targeted CV variant.
+ *
+ * Same facts as every other variant, ordered and framed for the roles named in `targetTitles`.
+ * The page states which roles it is aimed at, so a reader arriving from a link does not have
+ * to guess why this version exists.
+ */
+import type { GetStaticPaths } from 'astro';
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CvDocument from '../../components/CvDocument.astro';
+import { path } from '../../config/site';
+import { loadProfile } from '../../lib/profile';
+import { cvPath } from '../../lib/files';
+
+export const getStaticPaths = (() => {
+  const profile = loadProfile();
+  return profile.variants
+    .filter((variant) => variant.id !== 'general')
+    .map((variant) => ({ params: { variant: variant.id }, props: { variant } }));
+}) satisfies GetStaticPaths;
+
+const { variant } = Astro.props;
+const profile = loadProfile();
+---
+
+<BaseLayout
+  title={`CV — ${variant.label}`}
+  description={`${profile.person.name}: CV targeted at ${variant.targetTitles.join(', ')}.`}
+  page={`/cv/${variant.id}`}
+>
+  <section class="section section--tight screen-only">
+    <p class="eyebrow">Targeted for {variant.targetTitles.join(' · ')}</p>
+    <div class="actions" style="margin-top:0">
+      <a class="button button--primary" href={path(cvPath(variant.filename, 'pdf'))} download>
+        Download PDF
+      </a>
+      <a class="button" href={path(cvPath(variant.filename, 'docx'))} download>Word (.docx)</a>
+      <a class="button" href={path('/cv')}>General CV</a>
+    </div>
+  </section>
+
+  <section class="section section--tight">
+    <CvDocument variant={variant} />
+  </section>
+</BaseLayout>

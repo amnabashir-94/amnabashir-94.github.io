@@ -1,0 +1,49 @@
+---
+/**
+ * The general CV, on the page, with its downloads. Targeted variants live at /cv/<id>.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import CvDocument from '../../components/CvDocument.astro';
+import { path } from '../../config/site';
+import { loadProfile, variantById } from '../../lib/profile';
+import { cvPath, portfolioPdfPath } from '../../lib/files';
+
+const profile = loadProfile();
+const variant = variantById(profile, 'general');
+const others = profile.variants.filter((v) => v.id !== 'general');
+---
+
+<BaseLayout
+  title="CV"
+  description={`CV of ${profile.person.name}, ${profile.person.headline.toLowerCase()}, ${profile.person.location.city}. Available as PDF and Word, with a portfolio PDF.`}
+  page="/cv"
+>
+  <section class="section section--tight screen-only">
+    <div class="actions" style="margin-top:0">
+      <a class="button button--primary" href={path(cvPath(variant.filename, 'pdf'))} download>
+        Download CV (PDF)
+      </a>
+      <a class="button" href={path(cvPath(variant.filename, 'docx'))} download>Word (.docx)</a>
+      <a class="button" href={path(portfolioPdfPath(profile))} download>Portfolio (PDF)</a>
+      <a class="button" href={path('/cv.txt')}>Plain text</a>
+    </div>
+    {
+      others.length > 0 && (
+        <p class="lede prose" style="margin-top:1.5rem">
+          Targeted versions:{' '}
+          {others.map((other, i) => (
+            <>
+              {i > 0 && ', '}
+              <a href={path(`/cv/${other.id}`)}>{other.label}</a>
+            </>
+          ))}
+          .
+        </p>
+      )
+    }
+  </section>
+
+  <section class="section section--tight">
+    <CvDocument variant={variant} />
+  </section>
+</BaseLayout>
