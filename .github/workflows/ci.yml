@@ -1,0 +1,27 @@
+name: Check
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# The CV and portfolio PDFs and the DOCX are built locally and committed, so CI needs neither
+# pandoc nor a browser. It verifies the profile, the CV structure and the built site. In CI,
+# check-dist (inside `npm run build`) also refuses the placeholder origin and missing downloads.
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Validate profile and images, report unverified claims, typecheck
+        run: npm run check
+      - name: Regenerate CVs and lint them for ATS structure
+        run: npm run cv:build && npm run cv:lint
+      - name: Build site and check the built pages
+        run: npm run build
