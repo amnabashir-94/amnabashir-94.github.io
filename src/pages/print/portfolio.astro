@@ -1,0 +1,656 @@
+---
+/**
+ * Print-only portfolio route: the source of the portfolio PDF. Noindexed, out of the sitemap,
+ * linked from nowhere.
+ *
+ * Architecture applications ask for a portfolio PDF, usually under an upload or email limit, so
+ * this is a document in its own right rather than the website printed: landscape A4 sheets,
+ * the featured projects in her chosen order, each opened by a title block and the brief, then
+ * the approach and the drawings. Generated from the same profile and the same images as the
+ * site, so the PDF can never describe a project differently from its page.
+ *
+ * Sheets are planned as data in the frontmatter, then rendered. Planning first is what makes
+ * the page numbers in the footer and on the contents sheet exact.
+ */
+import type { ImageMetadata } from 'astro';
+import { getImage } from 'astro:assets';
+
+import { absoluteUrl, SITE_URL_IS_PLACEHOLDER } from '../../config/site';
+import {
+  capitalise,
+  featuredProjects,
+  formatPeriod,
+  loadProfile,
+  orderedExperience,
+} from '../../lib/profile';
+import { loadProjectImages, type LoadedImage } from '../../lib/images';
+import { valueOf } from '../../schema/claim';
+import type { Project } from '../../schema/profile';
+import '../../styles/global.css';
+
+/**
+ * Images per project, cover included. The PDF is an argument, not the archive — the site
+ * holds every drawing — and each image costs upload size. Six keeps a five-project portfolio
+ * comfortably inside the 10 MB limit firms commonly set; `make-pdf` reports the real size.
+ */
+const MAX_IMAGES_PER_PROJECT = 6;
+
+const profile = loadProfile();
+const { person } = profile;
+const projects = featuredProjects(profile);
+
+/** A print-ready rendition: JPEG, because Chrome embeds JPEG as-is and re-encodes the rest losslessly. */
+interface PrintImage extends LoadedImage {
+  readonly src: string;
+}
+
+async function printable(image: LoadedImage): Promise<PrintImage> {
+  // Drawings get more pixels and a higher quality: their information is in fine lines.
+  const width = Math.min(image.uncroppable ? 2200 : 1700, image.meta.width);
+  const quality = image.uncroppable ? 88 : 80;
+  const rendition = await getImage({
+    src: image.meta as ImageMetadata,
+    width,
+    format: 'jpg',
+    quality,
+  });
+  return { ...image, src: rendition.src };
+}
+
+type Sheet =
+  | { kind: 'cover'; image: PrintImage | undefined }
+  | { kind: 'contents' }
+  | { kind: 'opener'; project: Project; number: number; image: PrintImage }
+  | { kind: 'approach'; project: Project; image: PrintImage | undefined }
+  | { kind: 'research'; project: Project }
+  | { kind: 'images'; project: Project; images: PrintImage[] }
+  | { kind: 'closing' };
+
+const sheets: Sheet[] = [];
+const firstSheetOf = new Map<string, number>();
+let leadCover: PrintImage | undefined;
+
+const plans = await Promise.all(
+  projects.map(async (project) => {
+    const all = await loadProjectImages(profile, project);
+    const cover = all.find((image) => image.file === project.cover) ?? all[0];
+    const rest = all.filter((image) => image !== cover).slice(0, MAX_IMAGES_PER_PROJECT - 1);
+    return {
+      project,
+      cover: cover ? await printable(cover) : undefined,
+      rest: await Promise.all(rest.map(printable)),
+    };
+  }),
+);
+
+leadCover = plans[0]?.cover;
+sheets.push({ kind: 'cover', image: leadCover });
+// A contents page listing one project is a blank page with a line on it: only from two up.
+if (plans.length > 1) sheets.push({ kind: 'contents' });
+
+plans.forEach(({ project, cover, rest }, i) => {
+  if (!cover) return;
+  firstSheetOf.set(project.id, sheets.length + 1);
+  sheets.push({ kind: 'opener', project, number: i + 1, image: cover });
+
+  // The approach shares a sheet with the first further image, so text sits next to evidence.
+  const [first, ...others] = rest;
+  // A research project with no further image skips the approach sheet: its methods sheet
+  // already says how the work was done, and an approach sheet with nothing beside the text is
+  // half a blank page. Its outcome moves onto the research sheet instead.
+  if (!(project.research && !first)) sheets.push({ kind: 'approach', project, image: first });
+
+  // A thesis gets its research on one sheet — questions and methods, findings,
+  // recommendations — so the PDF also works as the research portfolio a scholarship asks for.
+  if (project.research) sheets.push({ kind: 'research', project });
+
+  // Then the remaining images: drawings alone on a sheet, so they print large enough to read;
+  // renders and photographs in pairs.
+  for (let j = 0; j < others.length; j++) {
+    const image = others[j]!;
+    const next = others[j + 1];
+    if (!image.uncroppable && next && !next.uncroppable) {
+      sheets.push({ kind: 'images', project, images: [image, next] });
+      j++;
+    } else {
+      sheets.push({ kind: 'images', project, images: [image] });
+    }
+  }
+});
+
+sheets.push({ kind: 'closing' });
+
+const total = sheets.length;
+const siteUrl = SITE_URL_IS_PLACEHOLDER ? undefined : absoluteUrl('/');
+const year = new Date().getFullYear();
+const contact = [person.email, person.phone, siteUrl].filter(Boolean).join('   ·   ');
+
+/** The fact cells for a project opener: the title block, compressed for paper. */
+function facts(project: Project): Array<[string, string]> {
+  const status = valueOf(project.status);
+  const cells: Array<[string, string | undefined]> = [
+    ['Role', valueOf(project.role)],
+    [
+      project.context === 'academic'
+        ? 'Studio'
+        : project.context === 'competition'
+          ? 'Competition'
+          : 'Practice',
+      project.organisation,
+    ],
+    ['Location', valueOf(project.location)],
+    ['Year', valueOf(project.period)],
+    ['Status', status ? capitalise(status) : undefined],
+    ['Typology', project.typology.join(', ')],
+    ['Area', valueOf(project.area)],
+    ['Credits', project.credits],
+  ];
+  return cells.filter((cell): cell is [string, string] => cell[1] !== undefined);
+}
+
+const pad = (n: number): string => String(n).padStart(2, '0');
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{person.name} — Portfolio</title>
+  </head>
+  <body class="portfolio">
+    {
+      sheets.map((sheet, index) => (
+        <section class:list={['sheet', `sheet--${sheet.kind}`]}>
+          {sheet.kind === 'cover' && (
+            <>
+              <div class="cover__text">
+                <p class="mono">Portfolio {year}</p>
+                <h1>{person.name}</h1>
+                <p class="cover__headline">{person.headline}</p>
+                <p class="cover__statement">{person.statement}</p>
+                <p class="mono cover__contact">{contact}</p>
+              </div>
+              {sheet.image && (
+                <div class:list={['cover__image', { mat: sheet.image.uncroppable }]}>
+                  <img src={sheet.image.src} alt={sheet.image.alt} />
+                </div>
+              )}
+            </>
+          )}
+
+          {sheet.kind === 'contents' && (
+            <>
+              <p class="mono">Contents</p>
+              <ol class="contents">
+                {projects.map((project, i) => (
+                  <li>
+                    <span class="mono accent">{pad(i + 1)}</span>
+                    <span>
+                      <strong>{project.title}</strong>
+                      <span class="muted">
+                        {' '}
+                        —{' '}
+                        {[project.typology.join(', '), valueOf(project.period)]
+                          .filter(Boolean)
+                          .join(', ')}
+                        {valueOf(project.role) && <>. {valueOf(project.role)}</>}
+                      </span>
+                    </span>
+                    <span class="mono muted">p. {firstSheetOf.get(project.id)}</span>
+                  </li>
+                ))}
+              </ol>
+            </>
+          )}
+
+          {sheet.kind === 'opener' && (
+            <>
+              <div class="opener__text">
+                <p class="mono accent">{pad(sheet.number)}</p>
+                <h2>{sheet.project.title}</h2>
+                <p class="opener__summary">{sheet.project.summary}</p>
+                <dl class="facts">
+                  {facts(sheet.project).map(([label, value]) => (
+                    <div>
+                      <dt>{label}</dt>
+                      <dd>{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+                <p class="mono">Brief</p>
+                <p class="small">{sheet.project.brief}</p>
+              </div>
+              <div class:list={['opener__image', { mat: sheet.image.uncroppable }]}>
+                <img src={sheet.image.src} alt={sheet.image.alt} />
+              </div>
+            </>
+          )}
+
+          {sheet.kind === 'approach' && (
+            <>
+              <div class:list={['approach__text', { 'approach__text--wide': !sheet.image }]}>
+                <p class="mono">{sheet.project.title} — Approach</p>
+                {sheet.project.approach.map((paragraph) => (
+                  <p class="small">{paragraph}</p>
+                ))}
+                {sheet.project.outcome && (
+                  <>
+                    <p class="mono">Outcome</p>
+                    <p class="small">{sheet.project.outcome}</p>
+                  </>
+                )}
+              </div>
+              {sheet.image && (
+                <figure class:list={['approach__image', { mat: sheet.image.uncroppable }]}>
+                  <img src={sheet.image.src} alt={sheet.image.alt} />
+                  <figcaption class="mono">
+                    {sheet.image.caption ?? capitalise(sheet.image.kind)}
+                  </figcaption>
+                </figure>
+              )}
+            </>
+          )}
+
+          {sheet.kind === 'research' && sheet.project.research && (
+            <div class="research-sheet">
+              <div>
+                <p class="mono">{sheet.project.title} — Research questions</p>
+                <ol class="small rq">
+                  {sheet.project.research.questions.map((q) => (
+                    <li>{q}</li>
+                  ))}
+                </ol>
+                <p class="mono">Methods</p>
+                {sheet.project.research.methods.map((m) => (
+                  <p class="small">
+                    <strong>{m.label}.</strong> {m.text}
+                  </p>
+                ))}
+                {sheet.project.research.sites.length > 0 && (
+                  <p class="small">
+                    <strong>Fieldwork.</strong> {sheet.project.research.sites.join(', ')}
+                  </p>
+                )}
+              </div>
+              <div>
+                <p class="mono">Findings</p>
+                {sheet.project.research.findings.map((f) => (
+                  <p class="small">
+                    <strong>{f.label}.</strong> {f.text}
+                  </p>
+                ))}
+              </div>
+              <div>
+                <p class="mono">Recommendations</p>
+                {sheet.project.research.recommendations.map((r) => (
+                  <p class="small">
+                    <strong>{r.label}.</strong> {r.text}
+                  </p>
+                ))}
+                {sheet.project.outcome && (
+                  <>
+                    <p class="mono">Outcome</p>
+                    <p class="small">{sheet.project.outcome}</p>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+
+          {sheet.kind === 'images' && (
+            <div class:list={['gallery', `gallery--${sheet.images.length}`]}>
+              {sheet.images.map((image) => (
+                <figure class:list={[{ mat: image.uncroppable }]}>
+                  <img src={image.src} alt={image.alt} />
+                  <figcaption class="mono">
+                    {sheet.project.title} — {image.caption ?? capitalise(image.kind)}
+                    {image.credit && <> · {image.credit}</>}
+                  </figcaption>
+                </figure>
+              ))}
+            </div>
+          )}
+
+          {sheet.kind === 'closing' && (
+            <>
+              <div class="closing__col">
+                <p class="mono">About</p>
+                <p class="small">{profile.about[0]}</p>
+                <p class="mono">Education</p>
+                <ul class="small plain">
+                  {profile.education
+                    .filter((q) => q.level === 'higher')
+                    .map((q) => (
+                      <li>
+                        {q.degree}, {q.awardingBody ?? q.institution}
+                        {valueOf(q.year) && <>, {valueOf(q.year)}</>}
+                        {valueOf(q.status) === 'in progress' && <> (in progress)</>}
+                        {valueOf(q.distinction) && <> — {valueOf(q.distinction)}</>}
+                      </li>
+                    ))}
+                </ul>
+                {profile.registrations.length > 0 && (
+                  <>
+                    <p class="mono">Registration</p>
+                    <ul class="small plain">
+                      {profile.registrations.map((r) => (
+                        <li>
+                          {r.title}, {r.body}
+                          {valueOf(r.number) && <> ({valueOf(r.number)})</>}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+              </div>
+              <div class="closing__col">
+                {profile.experience.length > 0 && (
+                  <>
+                    <p class="mono">Experience</p>
+                    <ul class="small plain">
+                      {orderedExperience(profile).map((role) => (
+                        <li>
+                          <strong>{role.title}</strong>, {role.organisation}
+                          <span class="muted"> — {formatPeriod(role)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
+                <p class="mono">Software</p>
+                <p class="small">{profile.software.flatMap((g) => g.items).join(' · ')}</p>
+                <p class="mono">Contact</p>
+                <p class="small">{contact}</p>
+              </div>
+            </>
+          )}
+
+          <footer class="sheet__footer mono">
+            <span>{person.name} — Portfolio</span>
+            <span>
+              {index + 1} / {total}
+            </span>
+          </footer>
+        </section>
+      ))
+    }
+  </body>
+</html>
+
+<style is:global>
+  /*
+   * Landscape A4 sheets with no printer margin: each sheet sets its own. Colours are forced
+   * light and backgrounds forced to print, because the mats behind drawings are part of the
+   * layout, not decoration.
+   */
+  @page {
+    size: A4 landscape;
+    margin: 0;
+  }
+
+  body.portfolio {
+    --paper: #fff;
+    --ink: #111;
+    --ink-muted: #555;
+    --rule: #ccc;
+    --accent: #9a4a2b;
+    margin: 0;
+    background: #8a8a86;
+    color: var(--ink);
+    font-size: 9.5pt;
+    line-height: 1.45;
+    color-scheme: light;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .portfolio .sheet {
+    position: relative;
+    width: 297mm;
+    height: 210mm;
+    padding: 13mm 14mm 16mm;
+    background: #fff;
+    overflow: hidden;
+    break-after: page;
+    display: grid;
+    gap: 9mm;
+  }
+
+  /* On screen, show the sheets as paper on a grey desk, so the route can be reviewed by eye. */
+  @media screen {
+    .portfolio .sheet {
+      margin: 8mm auto;
+      box-shadow: 0 2px 12px rgb(0 0 0 / 0.25);
+    }
+  }
+  @media print {
+    body.portfolio {
+      background: #fff;
+    }
+  }
+
+  .portfolio .mono {
+    font-family: var(--font-mono);
+    font-size: 7.5pt;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+    margin: 0 0 3mm;
+  }
+  .portfolio .accent {
+    color: var(--accent);
+  }
+  .portfolio .muted {
+    color: var(--ink-muted);
+  }
+  .portfolio .small {
+    font-size: 9pt;
+    margin: 0 0 3.5mm;
+  }
+  .portfolio .plain {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 5mm;
+  }
+  .portfolio .plain li {
+    margin-bottom: 1.5mm;
+  }
+
+  .portfolio img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .portfolio .mat {
+    background: #fff;
+    border: 0.4pt solid #ddd;
+    padding: 4mm;
+  }
+  .portfolio .mat img {
+    object-fit: contain;
+  }
+
+  .portfolio figure {
+    margin: 0;
+    display: grid;
+    grid-template-rows: 1fr auto;
+    min-height: 0;
+  }
+  .portfolio figure img {
+    min-height: 0;
+  }
+  .portfolio figcaption {
+    margin: 2mm 0 0;
+  }
+
+  .sheet__footer {
+    position: absolute;
+    left: 14mm;
+    right: 14mm;
+    bottom: 7mm;
+    display: flex;
+    justify-content: space-between;
+    margin: 0 !important;
+    border-top: 0.4pt solid var(--rule);
+    padding-top: 2mm;
+  }
+
+  /* Cover: text left, the lead project's image right. */
+  .sheet--cover {
+    grid-template-columns: 1fr 1.5fr;
+    align-items: stretch;
+  }
+  .cover__text {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .cover__text h1 {
+    font-size: 30pt;
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    margin: 0 0 2mm;
+  }
+  .cover__headline {
+    font-size: 12pt;
+    color: var(--accent);
+    margin: 0 0 6mm;
+  }
+  .cover__statement {
+    font-size: 11pt;
+    line-height: 1.4;
+    margin: 0 0 10mm;
+  }
+  .cover__contact {
+    text-transform: none;
+    letter-spacing: 0.02em;
+  }
+  .cover__image {
+    min-height: 0;
+  }
+
+  /* Contents. */
+  .sheet--contents {
+    align-content: start;
+  }
+  .contents {
+    list-style: none;
+    margin: 4mm 0 0;
+    padding: 0;
+    border-top: 0.6pt solid var(--ink);
+  }
+  .contents li {
+    display: grid;
+    grid-template-columns: 14mm 1fr 18mm;
+    align-items: baseline;
+    padding: 4mm 0;
+    border-bottom: 0.4pt solid var(--rule);
+    font-size: 12pt;
+  }
+  .contents li .mono {
+    margin: 0;
+  }
+  .contents li > :last-child {
+    text-align: right;
+  }
+
+  /* Project opener: facts left, cover right. */
+  .sheet--opener {
+    grid-template-columns: 1fr 2fr;
+  }
+  .opener__text {
+    min-height: 0;
+    overflow: hidden;
+  }
+  .opener__text h2 {
+    font-size: 18pt;
+    font-weight: 500;
+    letter-spacing: -0.015em;
+    margin: 0 0 3mm;
+  }
+  .opener__summary {
+    font-size: 10.5pt;
+    margin: 0 0 5mm;
+  }
+  .opener__image {
+    min-height: 0;
+  }
+  .facts {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    margin: 0 0 5mm;
+    border-top: 0.6pt solid var(--ink);
+  }
+  .facts div {
+    padding: 1.6mm 2mm 1.8mm 0;
+    border-bottom: 0.4pt solid var(--rule);
+  }
+  .facts dt {
+    font-family: var(--font-mono);
+    font-size: 6pt;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-muted);
+  }
+  .facts dd {
+    margin: 0;
+    font-size: 8.6pt;
+  }
+
+  /* Approach: text beside the first further image. */
+  .sheet--approach {
+    grid-template-columns: 1fr 2fr;
+  }
+  .approach__text {
+    min-height: 0;
+    overflow: hidden;
+  }
+  .approach__text--wide {
+    grid-column: 1 / -1;
+    columns: 2;
+    column-gap: 10mm;
+  }
+  .approach__image {
+    min-height: 0;
+  }
+
+  /* Closing: about and education beside experience, software and contact. */
+  .sheet--closing {
+    grid-template-columns: 1fr 1fr;
+    align-content: start;
+  }
+
+  /* Research: three columns of small type — questions and methods, findings, recommendations. */
+  .research-sheet {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8mm;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .research-sheet .small {
+    font-size: 7.9pt;
+    line-height: 1.38;
+    margin-bottom: 2.4mm;
+  }
+  .research-sheet .rq {
+    padding-left: 4mm;
+    margin: 0 0 4mm;
+  }
+  .research-sheet .rq li {
+    margin-bottom: 1.6mm;
+  }
+
+  /* Galleries: one drawing large, or two images side by side. */
+  .gallery {
+    display: grid;
+    gap: 8mm;
+    min-height: 0;
+  }
+  .gallery--2 {
+    grid-template-columns: 1fr 1fr;
+  }
+</style>
