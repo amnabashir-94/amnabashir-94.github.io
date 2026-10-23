@@ -1,0 +1,557 @@
+/*
+ * Design foundation.
+ *
+ * For an architect the site is itself a sample of the work: a reader judging her eye will
+ * judge it here first. So the design borrows from the drawing sheet rather than the web
+ * template — a strict grid, thin rules, generous white space, small monospaced labels like a
+ * title block, and the work itself at full width. One accent, terracotta, taken from brick.
+ *
+ * Images lead and type steps back. Drawings are never cropped and sit on a light mat in both
+ * colour schemes, because inverting or darkening a line drawing destroys it.
+ *
+ * System font stacks only. A web font would cost a round trip and a layout shift for a
+ * difference this design does not depend on.
+ */
+
+:root {
+  --font-sans: 'Helvetica Neue', Helvetica, 'Segoe UI', Arial, system-ui, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+
+  --paper: #f5f4f0;
+  --paper-raised: #ffffff;
+  --ink: #151515;
+  --ink-muted: #5f5d58;
+  --rule: #d9d6cf;
+  --accent: #9a4a2b;
+  --accent-soft: #efe4dc;
+  /* The mat behind drawings. Light in both schemes, on purpose. */
+  --mat: #ffffff;
+  --mat-rule: #e4e1da;
+
+  --measure: 38rem;
+  --page: 78rem;
+  --gutter: clamp(1rem, 0.5rem + 2vw, 2.5rem);
+  --space: clamp(3rem, 2rem + 4vw, 6rem);
+
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #111110;
+    --paper-raised: #1a1a18;
+    --ink: #ecebe6;
+    --ink-muted: #a3a09a;
+    --rule: #2d2c29;
+    --accent: #e0916d;
+    --accent-soft: #2a1d17;
+    --mat: #f1efea;
+    --mat-rule: #2d2c29;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 500;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  margin: 0 0 0.5em;
+}
+
+h1 {
+  font-size: clamp(2rem, 1.3rem + 3vw, 3.6rem);
+}
+h2 {
+  font-size: clamp(1.45rem, 1.15rem + 1.2vw, 2.1rem);
+}
+h3 {
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+}
+
+p {
+  margin: 0 0 1em;
+}
+p:last-child {
+  margin-bottom: 0;
+}
+
+a {
+  color: inherit;
+  text-decoration-color: var(--accent);
+  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+}
+a:hover {
+  color: var(--accent);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+picture {
+  display: block;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 1px;
+}
+
+/* ── Layout ─────────────────────────────────────────────────────────────────────── */
+
+.page {
+  width: min(100% - 2 * var(--gutter), var(--page));
+  margin-inline: auto;
+}
+
+.prose {
+  max-width: var(--measure);
+}
+
+.section {
+  padding-block: var(--space);
+  border-top: 1px solid var(--rule);
+}
+.section:first-of-type {
+  border-top: 0;
+}
+.section--tight {
+  padding-block: calc(var(--space) * 0.6);
+}
+
+/*
+ * The label column. On wide screens a section's label sits in a narrow left column and its
+ * content in the right, the way a drawing sheet keeps its notes to one side. On a phone the
+ * label simply stacks above.
+ */
+.split {
+  display: grid;
+  gap: 1rem var(--gutter);
+}
+@media (min-width: 52rem) {
+  .split {
+    grid-template-columns: minmax(10rem, 1fr) 3fr;
+  }
+}
+
+.label,
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin: 0 0 1.1rem;
+}
+.label--accent {
+  color: var(--accent);
+}
+
+.lede {
+  font-size: clamp(1.1rem, 1rem + 0.45vw, 1.32rem);
+  line-height: 1.5;
+  color: var(--ink-muted);
+}
+
+/* ── Site chrome ────────────────────────────────────────────────────────────────── */
+
+.masthead {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem 2rem;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-block: 1.4rem;
+  border-bottom: 1px solid var(--ink);
+}
+
+.masthead__name {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none;
+}
+.masthead__name span {
+  font-weight: 400;
+  color: var(--ink-muted);
+  letter-spacing: 0.04em;
+}
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.6rem;
+  font-size: 0.9rem;
+}
+.nav a {
+  text-decoration: none;
+  color: var(--ink-muted);
+}
+.nav a:hover,
+.nav a[aria-current='page'] {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+}
+
+.colophon {
+  border-top: 1px solid var(--ink);
+  padding-block: 2rem 3rem;
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 2rem;
+  justify-content: space-between;
+}
+
+/*
+ * The sample banner. Present only when the site is built from the layout fixture, and
+ * `check-dist` fails any build that contains it unless sample mode was explicitly requested.
+ */
+.sample-banner {
+  background: var(--accent);
+  color: var(--paper);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-align: center;
+  padding: 0.5rem 1rem;
+}
+
+/* ── Components ─────────────────────────────────────────────────────────────────── */
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-top: 2rem;
+}
+
+.button {
+  font-size: 0.88rem;
+  font-weight: 500;
+  padding: 0.65rem 1.15rem;
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  text-decoration: none;
+  background: transparent;
+  transition:
+    background-color 120ms ease,
+    color 120ms ease,
+    border-color 120ms ease;
+}
+.button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.button--primary {
+  background: var(--ink);
+  color: var(--paper);
+}
+.button--primary:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--paper);
+}
+
+.grid {
+  display: grid;
+  gap: clamp(1.5rem, 1rem + 2vw, 2.75rem);
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.list-plain {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.list-plain li + li {
+  margin-top: 0.35rem;
+}
+
+.points {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+.points li {
+  margin-bottom: 0.5rem;
+}
+.points li::marker {
+  color: var(--accent);
+}
+
+/* Project cards: the work first, then a numbered title, like a drawing register. */
+.cards {
+  display: grid;
+  gap: clamp(2rem, 1.5rem + 2vw, 3.5rem) var(--gutter);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 21rem), 1fr));
+}
+.cards--featured {
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 28rem), 1fr));
+}
+
+.card {
+  display: block;
+  text-decoration: none;
+}
+.card:hover .card__title {
+  color: var(--accent);
+}
+.card__media {
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: var(--rule);
+  margin-bottom: 0.9rem;
+}
+/* <Picture> wraps the <img>; the wrapper must fill the box too, or `height: 100%` means nothing. */
+.card__media picture {
+  width: 100%;
+  height: 100%;
+}
+.card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 400ms ease;
+}
+.card:hover .card__media img {
+  transform: scale(1.02);
+}
+.card__media--mat {
+  background: var(--mat);
+  border: 1px solid var(--mat-rule);
+}
+.card__media--mat img {
+  object-fit: contain;
+  padding: 0.75rem;
+}
+.card__index {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--accent);
+  margin: 0 0 0.25rem;
+}
+.card__title {
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin: 0 0 0.2rem;
+}
+.card__meta {
+  font-size: 0.88rem;
+  color: var(--ink-muted);
+  margin: 0;
+}
+
+/*
+ * The title block: a project's facts as a ruled grid of small labelled cells, the way the
+ * corner of a drawing sheet records them.
+ */
+.titleblock {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+  border-top: 1px solid var(--ink);
+  border-left: 1px solid var(--rule);
+  margin: 0;
+}
+.titleblock > div {
+  border-right: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  padding: 0.75rem 0.9rem 0.85rem;
+}
+.titleblock dt {
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+  margin-bottom: 0.25rem;
+}
+.titleblock dd {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* Figures: full width; drawings on a mat, never cropped. */
+.figure {
+  margin: 0 0 clamp(2rem, 1.5rem + 2vw, 3.5rem);
+}
+.figure__frame {
+  background: var(--rule);
+}
+.figure__frame--mat {
+  background: var(--mat);
+  border: 1px solid var(--mat-rule);
+  padding: clamp(0.75rem, 0.5rem + 1.5vw, 2rem);
+}
+.figure__frame img {
+  width: 100%;
+}
+.figure figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.2rem 1rem;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  color: var(--ink-muted);
+  padding-top: 0.6rem;
+}
+.figure__num {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--accent);
+  margin-right: 0.6rem;
+}
+
+/* Timeline rows: dates down the left edge, scannable. */
+.rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+.rows > li {
+  display: grid;
+  gap: 0.2rem var(--gutter);
+  padding-block: 1rem;
+  border-bottom: 1px solid var(--rule);
+}
+@media (min-width: 40rem) {
+  .rows > li {
+    grid-template-columns: 11rem 1fr;
+  }
+}
+.rows__when {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  padding-top: 0.2rem;
+}
+.rows__what {
+  margin: 0;
+}
+.rows__what strong {
+  font-weight: 500;
+}
+.rows__sub {
+  display: block;
+  font-size: 0.9rem;
+  color: var(--ink-muted);
+}
+
+/* Role entries on the About page and in the on-page CV. */
+.role {
+  margin-bottom: 2.75rem;
+}
+.role:last-child {
+  margin-bottom: 0;
+}
+.role__title {
+  margin-bottom: 0.15rem;
+}
+.role__meta {
+  font-size: 0.88rem;
+  color: var(--ink-muted);
+  margin: 0 0 0.35rem;
+}
+.role__context {
+  font-size: 0.95rem;
+  color: var(--ink-muted);
+  font-style: italic;
+  margin: 0 0 0.9rem;
+}
+
+.pager {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: 1fr 1fr;
+  border-top: 1px solid var(--ink);
+  padding-top: 1.25rem;
+}
+.pager a {
+  text-decoration: none;
+}
+.pager a:hover strong {
+  color: var(--accent);
+}
+.pager__next {
+  text-align: right;
+}
+
+.skip-link {
+  position: absolute;
+  left: -9999px;
+}
+.skip-link:focus {
+  left: 1rem;
+  top: 1rem;
+  z-index: 10;
+  padding: 0.6rem 1rem;
+  background: var(--paper-raised);
+  border: 1px solid var(--accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/*
+ * Print, for a visitor printing a web page. The CV and portfolio PDFs do not come from here:
+ * they are printed from dedicated `/print/` routes that carry no site chrome at all, so
+ * nothing can fail to be hidden.
+ */
+@media print {
+  :root {
+    --paper: #ffffff;
+    --ink: #000000;
+    --ink-muted: #333333;
+    --rule: #999999;
+    --accent: #000000;
+  }
+  .masthead,
+  .colophon,
+  .nav,
+  .actions,
+  .skip-link,
+  .pager,
+  .sample-banner,
+  .screen-only {
+    display: none !important;
+  }
+  .section {
+    border-top: 0;
+    padding-block: 0.5rem;
+  }
+  a {
+    text-decoration: none;
+  }
+}

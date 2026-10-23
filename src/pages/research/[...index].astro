@@ -1,0 +1,229 @@
+---
+/**
+ * Research — written for scholarship and admissions panels.
+ *
+ * A panel wants four things in order: what she researches, why, how well, and what she would
+ * do next. So the page opens with her research profile and the moment the question arose,
+ * states her interests, sets out each thesis as questions, methods and findings, and closes
+ * with the conferences and courses that show the interest is sustained rather than a one-off.
+ * The academic CV is one click away.
+ *
+ * A rest-parameter route rather than a plain page, so that it exists only when the profile has
+ * a research section: `getStaticPaths` returns `/research/` or nothing. A plain page would have
+ * to render something for a profile with no research, and an empty Research page is worse
+ * than none.
+ */
+import type { GetStaticPaths } from 'astro';
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ResearchBlock from '../../components/ResearchBlock.astro';
+import { path } from '../../config/site';
+import { isPublishable, loadProfile, projectById, publishedProjects } from '../../lib/profile';
+import { cvPath } from '../../lib/files';
+import { valueOf } from '../../schema/claim';
+
+export const getStaticPaths = (() =>
+  loadProfile().research ? [{ params: { index: undefined } }] : []) satisfies GetStaticPaths;
+
+const profile = loadProfile();
+const { person } = profile;
+const research = profile.research!;
+
+const studies = publishedProjects(profile).filter((project) => project.research);
+const interests = valueOf(research.interests);
+const academicCv = profile.variants.find((v) => v.kind === 'academic');
+
+// Theses that are not (yet) project pages: listed by title, so earlier research is not lost.
+const otherTheses = profile.education.filter(
+  (q) => q.thesis && !(q.thesisProject && isPublishable(projectById(profile, q.thesisProject))),
+);
+
+const capitalise = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1);
+---
+
+<BaseLayout
+  title="Research"
+  description={`Research by ${person.name}: ${interests ? interests.slice(0, 3).join(', ').toLowerCase() : 'public space in Lahore'}.`}
+  page="/research"
+>
+  <section class="section">
+    <p class="eyebrow">Research</p>
+    <h1 class="research__title">{studies[0]?.title ?? 'Research'}</h1>
+    <div class="prose">
+      {research.summary.map((p, i) => <p class={i === 0 ? 'lede' : undefined}>{p}</p>)}
+    </div>
+    <div class="actions">
+      {
+        academicCv && (
+          <a
+            class="button button--primary"
+            href={path(cvPath(academicCv.filename, 'pdf'))}
+            download
+          >
+            Academic CV (PDF)
+          </a>
+        )
+      }
+      {
+        studies[0] && (
+          <a class="button" href={path(`/projects/${studies[0].id}`)}>
+            The full study
+          </a>
+        )
+      }
+      <a class="button" href={`mailto:${person.email}`}>{person.email}</a>
+    </div>
+  </section>
+
+  {
+    (research.motivation || interests) && (
+      <section class="section">
+        {research.motivation && (
+          <div class="split">
+            <p class="label">Where the question came from</p>
+            <blockquote class="prose motivation">{research.motivation}</blockquote>
+          </div>
+        )}
+        {interests && (
+          <div class:list={['split', { block: Boolean(research.motivation) }]}>
+            <p class="label">Research interests</p>
+            <ul class="interests">
+              {interests.map((i) => (
+                <li>{i}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
+    )
+  }
+
+  {
+    studies.map((study) => (
+      <section class="section">
+        <div class="split">
+          <p class="label">{study.research!.degree}</p>
+          <div>
+            <h2>
+              <a href={path(`/projects/${study.id}`)}>{study.title}</a>
+            </h2>
+            <p class="meta">
+              {[
+                study.organisation,
+                valueOf(study.period),
+                study.research!.supervisor && `Supervisor: ${study.research!.supervisor}`,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+            </p>
+          </div>
+        </div>
+        <div class="block">
+          <ResearchBlock research={study.research!} full={false} />
+        </div>
+        <div class="actions">
+          <a class="button" href={path(`/projects/${study.id}`)}>
+            Recommendations, sites and figures
+          </a>
+        </div>
+      </section>
+    ))
+  }
+
+  {
+    (otherTheses.length > 0 || profile.events.length > 0 || profile.certifications.length > 0) && (
+      <section class="section">
+        {otherTheses.length > 0 && (
+          <div class="split">
+            <p class="label">Earlier research</p>
+            <ul class="rows">
+              {otherTheses.map((q) => (
+                <li>
+                  <span class="rows__when">{valueOf(q.year) ?? ''}</span>
+                  <p class="rows__what">
+                    <strong>{q.thesis}</strong>
+                    <span class="rows__sub">
+                      {q.degree} thesis, {q.awardingBody ?? q.institution}
+                    </span>
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {profile.events.length > 0 && (
+          <div class:list={['split', { block: otherTheses.length > 0 }]}>
+            <p class="label">Conferences and lecture series</p>
+            <ul class="rows">
+              {profile.events.map((e) => (
+                <li>
+                  <span class="rows__when">{valueOf(e.date) ?? ''}</span>
+                  <p class="rows__what">
+                    {e.title}
+                    <span class="rows__sub">
+                      {capitalise(e.role)} · {e.organiser}
+                    </span>
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {profile.certifications.length > 0 && (
+          <div class="split block">
+            <p class="label">Continuing study</p>
+            <ul class="rows">
+              {profile.certifications.map((c) => (
+                <li>
+                  <span class="rows__when">
+                    {valueOf(c.year) ?? (valueOf(c.status) === 'in progress' ? 'In progress' : '')}
+                  </span>
+                  <p class="rows__what">
+                    {c.title}
+                    <span class="rows__sub">
+                      {c.issuer}
+                      {c.via && <> · via {c.via}</>}
+                    </span>
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .research__title {
+    max-width: 24ch;
+  }
+  .meta {
+    color: var(--ink-muted);
+    font-size: 0.92rem;
+  }
+  .block {
+    margin-top: 2.75rem;
+  }
+  .motivation {
+    margin: 0;
+    padding-left: 1.25rem;
+    border-left: 2px solid var(--accent);
+    font-size: 1.12rem;
+    line-height: 1.6;
+  }
+  .interests {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  .interests li {
+    border: 1px solid var(--rule);
+    padding: 0.35rem 0.75rem;
+    font-size: 0.92rem;
+  }
+</style>

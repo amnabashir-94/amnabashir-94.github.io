@@ -1,0 +1,102 @@
+---
+/**
+ * Contact, and every downloadable document.
+ *
+ * Firms usually ask for two things at once: a CV and a portfolio PDF under an upload limit.
+ * Both are here, together, alongside every channel she has chosen to make public. The phone
+ * number appears only if she has put one in the profile.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { path } from '../config/site';
+import { loadProfile, telHref } from '../lib/profile';
+import { cvPath, portfolioPdfPath } from '../lib/files';
+import { valueOf } from '../schema/claim';
+
+const profile = loadProfile();
+const { person } = profile;
+
+const LINK_LABELS = {
+  linkedin: 'LinkedIn',
+  instagram: 'Instagram',
+  behance: 'Behance',
+  issuu: 'Issuu',
+  website: 'Website',
+} as const;
+
+const links = (Object.keys(LINK_LABELS) as Array<keyof typeof LINK_LABELS>).flatMap((key) => {
+  const url = valueOf(person.links[key]);
+  return url === undefined ? [] : [{ label: LINK_LABELS[key], url }];
+});
+---
+
+<BaseLayout
+  title="Contact"
+  description={`Contact ${person.name}, ${person.headline.toLowerCase()} in ${person.location.city}. CV and portfolio available as PDF.`}
+  page="/contact"
+>
+  <section class="section">
+    <p class="eyebrow">Contact</p>
+    <h1>Let's talk</h1>
+    <div class="prose">
+      <p class="lede">{person.availability}</p>
+      <p>Email is the quickest route.</p>
+    </div>
+    <div class="actions">
+      <a class="button button--primary" href={`mailto:${person.email}`}>{person.email}</a>
+      {
+        person.phone && (
+          <a class="button" href={telHref(person.phone)}>
+            {person.phone}
+          </a>
+        )
+      }
+      {
+        links.map((link) => (
+          <a class="button" href={link.url} rel="me noopener">
+            {link.label}
+          </a>
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="split">
+      <p class="label">Documents</p>
+      <div>
+        <ul class="rows">
+          <li>
+            <span class="rows__when">Portfolio</span>
+            <p class="rows__what">
+              <a href={path(portfolioPdfPath(profile))} download>Portfolio (PDF)</a>
+              <span class="rows__sub"
+                >Selected projects, landscape A4, sized for email and upload forms.</span
+              >
+            </p>
+          </li>
+          {
+            profile.variants.map((variant) => (
+              <li>
+                <span class="rows__when">CV · {variant.label}</span>
+                <p class="rows__what">
+                  <a href={path(cvPath(variant.filename, 'pdf'))} download>
+                    PDF
+                  </a>
+                  {' · '}
+                  <a href={path(cvPath(variant.filename, 'docx'))} download>
+                    Word
+                  </a>
+                  {' · '}
+                  <a href={path(variant.id === 'general' ? '/cv' : `/cv/${variant.id}`)}>
+                    Read online
+                  </a>
+                  <span class="rows__sub">{variant.targetTitles.join(' · ')}</span>
+                </p>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

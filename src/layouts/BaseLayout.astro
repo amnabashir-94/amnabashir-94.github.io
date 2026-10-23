@@ -1,0 +1,122 @@
+---
+/**
+ * Shared document shell: metadata, social cards, structured data and site chrome.
+ *
+ * Every page routes its head through here so the canonical URL, Open Graph card and JSON-LD
+ * can never be present on one page and forgotten on another — the sort of inconsistency that
+ * quietly costs a link preview when someone forwards a project to a partner at a firm.
+ */
+import { absoluteUrl, path } from '../config/site';
+import { loadProfile } from '../lib/profile';
+import { loadPortrait, socialImageUrl } from '../lib/images';
+import PersonSchema from '../components/PersonSchema.astro';
+import '../styles/global.css';
+
+interface Props {
+  /** Page title, without the site suffix. */
+  title: string;
+  /** Meta description. Written per page; a generic one wastes the strongest snippet slot. */
+  description: string;
+  /** Site-root-relative path of this page, for the canonical URL and nav highlighting. */
+  page: string;
+  /** Absolute URL of the social-card image. Defaults to the portrait, when there is one. */
+  image?: string | undefined;
+  /** Extra JSON-LD for this page, e.g. a project's CreativeWork. */
+  schema?: Record<string, unknown> | undefined;
+}
+
+const { title, description, page, image, schema } = Astro.props;
+const profile = loadProfile();
+const { person } = profile;
+
+const portrait = await loadPortrait(profile);
+const cardImage = image ?? (portrait ? await socialImageUrl(portrait) : undefined);
+
+const canonical = absoluteUrl(page);
+const fullTitle =
+  page === '/' ? `${person.name} — ${person.headline}` : `${title} — ${person.name}`;
+const [firstName, ...rest] = person.name.split(' ');
+
+// "Research" appears only when the profile has a research section — the route exists only then.
+const NAV = [
+  { label: 'Projects', href: '/projects' },
+  ...(profile.research ? [{ label: 'Research', href: '/research' }] : []),
+  { label: 'About', href: '/about' },
+  { label: 'CV', href: '/cv' },
+  { label: 'Contact', href: '/contact' },
+];
+
+/** Highlight the section a page belongs to, so a project page lights up "Projects". */
+const isCurrent = (href: string): boolean => page === href || page.startsWith(`${href}/`);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {profile.sample && <meta name="robots" content="noindex, nofollow" />}
+
+    <meta property="og:type" content="profile" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:site_name" content={person.name} />
+    <meta property="profile:first_name" content={firstName} />
+    {rest.length > 0 && <meta property="profile:last_name" content={rest.join(' ')} />}
+    {cardImage && <meta property="og:image" content={cardImage} />}
+    <meta name="twitter:card" content={cardImage ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    {cardImage && <meta name="twitter:image" content={cardImage} />}
+
+    <meta name="author" content={person.name} />
+    <link rel="icon" href={path('/favicon.svg')} type="image/svg+xml" />
+    <PersonSchema />
+    {schema && <script type="application/ld+json" set:html={JSON.stringify(schema)} is:inline />}
+  </head>
+
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    {
+      profile.sample && (
+        <div class="sample-banner" data-sample-banner>
+          Sample content — a layout preview built from data/sample, not Amna's work
+        </div>
+      )
+    }
+
+    <div class="page">
+      <header class="masthead">
+        <a class="masthead__name" href={path('/')}>
+          {person.name}<span>{` · ${person.headline}`}</span>
+        </a>
+        <nav class="nav" aria-label="Primary">
+          {
+            NAV.map((item) => (
+              <a href={path(item.href)} aria-current={isCurrent(item.href) ? 'page' : undefined}>
+                {item.label}
+              </a>
+            ))
+          }
+        </nav>
+      </header>
+
+      <main id="main">
+        <slot />
+      </main>
+
+      <footer class="colophon">
+        <span>
+          {person.name} — {person.headline}, {person.location.city}
+        </span>
+        <span>
+          <a href={`mailto:${person.email}`}>{person.email}</a>
+        </span>
+      </footer>
+    </div>
+  </body>
+</html>

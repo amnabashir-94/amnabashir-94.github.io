@@ -1,0 +1,53 @@
+---
+/**
+ * One image of a project, at full width, with a numbered caption.
+ *
+ * Drawings, diagrams and sheets sit on a light mat and are shown whole; renders and photos run
+ * edge to edge. Every figure links to its largest rendition, because a plan carries detail no
+ * phone-sized image can show, and the browser's own viewer gives zoom without client script.
+ */
+import { Picture } from 'astro:assets';
+
+import { fullSizeSrc, widthsFor, type LoadedImage } from '../lib/images';
+import { capitalise } from '../lib/profile';
+
+interface Props {
+  image: LoadedImage;
+  /** 1-based figure number within the project. */
+  number: number;
+  eager?: boolean;
+}
+
+const { image, number, eager = false } = Astro.props;
+const full = await fullSizeSrc(image);
+const widths = widthsFor(image.meta, [640, 960, 1400, 2000]);
+// Never shown wider than the image really is: a low-resolution figure sits centred at its
+// native size rather than being stretched soft across the column.
+const nativeSize = `max-width: min(100%, ${image.meta.width}px); margin-inline: auto;`;
+---
+
+<figure class="figure">
+  <div class:list={['figure__frame', { 'figure__frame--mat': image.uncroppable }]}>
+    <a href={full} aria-label={`Open full size: ${image.caption ?? image.alt}`}>
+      <Picture
+        src={image.meta}
+        alt={image.alt}
+        formats={['avif', 'webp']}
+        widths={widths}
+        sizes={`(min-width: 78rem) min(74rem, ${image.meta.width}px), 100vw`}
+        loading={eager ? 'eager' : 'lazy'}
+        decoding="async"
+        style={nativeSize}
+      />
+    </a>
+  </div>
+  <figcaption>
+    <span>
+      <span class="figure__num">Fig. {String(number).padStart(2, '0')}</span>
+      {image.caption ?? capitalise(image.kind)}
+    </span>
+    <span>
+      {capitalise(image.kind)}{image.credit && <> · {image.credit}</>}
+    </span>
+  </figcaption>
+</figure>

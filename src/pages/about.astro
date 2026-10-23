@@ -1,0 +1,345 @@
+---
+/**
+ * The full record: who she is, every role with every bullet, education with grades,
+ * registration, recognition, conferences, courses, software and skills.
+ *
+ * The CV is the précis and the projects are the evidence; this page is where a reader who is
+ * already interested goes to check — a hiring partner, or a scholarship panel verifying an
+ * application. Nothing is trimmed for length here, and school certificates are included
+ * because scholarship forms ask for them.
+ */
+import { Picture } from 'astro:assets';
+
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { path } from '../config/site';
+import {
+  isPublishable,
+  loadProfile,
+  orderedExperience,
+  projectById,
+  roleMeta,
+} from '../lib/profile';
+import { loadPortrait, widthsFor } from '../lib/images';
+import { valueOf } from '../schema/claim';
+import type { Profile } from '../schema/profile';
+
+const profile = loadProfile();
+const { person } = profile;
+const roles = orderedExperience(profile);
+const portrait = await loadPortrait(profile);
+
+/** Projects linked from a role, limited to those that may be published. */
+const roleProjects = (ids: readonly string[]) =>
+  ids.map((id) => projectById(profile, id)).filter(isPublishable);
+
+const KIND_LABEL = {
+  award: 'Award',
+  competition: 'Competition',
+  exhibition: 'Exhibition',
+  publication: 'Publication',
+} as const;
+
+/** "2012–2017", "2019–present", or "" — the left column of an education row. */
+function educationWhen(q: Profile['education'][number]): string {
+  const started = valueOf(q.started);
+  const year = valueOf(q.year);
+  if (year) return started ? `${started}–${year}` : String(year);
+  if (!started) return '';
+  // Not yet awarded — in progress, or submitted and awaiting defence — still runs to "present".
+  const status = valueOf(q.status);
+  return status && status !== 'completed' ? `${started}–present` : `from ${started}`;
+}
+
+const capitalise = (text: string): string => text.charAt(0).toUpperCase() + text.slice(1);
+---
+
+<BaseLayout
+  title="About"
+  description={`About ${person.name}, ${person.headline.toLowerCase()} in ${person.location.city}: experience, education, research, software and recognition.`}
+  page="/about"
+>
+  <section class="section">
+    <div class="split">
+      <div>
+        {
+          portrait ? (
+            <Picture
+              class="portrait"
+              src={portrait}
+              alt={`Portrait of ${person.name}`}
+              formats={['avif', 'webp']}
+              widths={widthsFor(portrait, [320, 640])}
+              sizes="16rem"
+              loading="eager"
+            />
+          ) : (
+            <p class="label">About</p>
+          )
+        }
+      </div>
+      <div>
+        <h1>{person.name}</h1>
+        <div class="prose">
+          {
+            profile.about.map((paragraph, i) => (
+              <p class={i === 0 ? 'lede' : undefined}>{paragraph}</p>
+            ))
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  {
+    roles.length > 0 && (
+      <section class="section">
+        <div class="split">
+          <p class="label">Experience</p>
+          <div>
+            {roles.map((role) => (
+              <article class="role">
+                <h2 class="role__title">{role.title}</h2>
+                <p class="role__meta">{roleMeta(role)}</p>
+                <p class="role__context">{role.organisationContext}</p>
+                <ul class="points prose">
+                  {role.highlights.map((h) => (
+                    <li>
+                      {h.text}
+                      {h.metric?.state === 'verified' && <> ({h.metric.value})</>}
+                    </li>
+                  ))}
+                </ul>
+                {roleProjects(role.projects).length > 0 && (
+                  <p class="role__projects">
+                    Projects:{' '}
+                    {roleProjects(role.projects).map((project, i) => (
+                      <>
+                        {i > 0 && ', '}
+                        <a href={path(`/projects/${project.id}`)}>{project.title}</a>
+                      </>
+                    ))}
+                  </p>
+                )}
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section">
+    <div class="split">
+      <p class="label">Education</p>
+      <ul class="rows">
+        {
+          profile.education.map((q) => (
+            <li>
+              <span class="rows__when">{educationWhen(q)}</span>
+              <p class="rows__what">
+                <strong>{q.degree}</strong> — {q.awardingBody ?? q.institution}
+                {q.awardingBody && <> ({q.institution})</>}, {q.location}
+                {(valueOf(q.distinction) || valueOf(q.grade)) && (
+                  <span class="rows__sub">
+                    {[valueOf(q.distinction), valueOf(q.grade)].filter(Boolean).join(' · ')}
+                  </span>
+                )}
+                {q.thesis && (
+                  <span class="rows__sub">
+                    Thesis:{' '}
+                    {q.thesisProject && isPublishable(projectById(profile, q.thesisProject)) ? (
+                      <a href={path(`/projects/${q.thesisProject}`)}>{q.thesis}</a>
+                    ) : (
+                      q.thesis
+                    )}
+                    {q.supervisor && <> · Supervisor: {q.supervisor}</>}
+                  </span>
+                )}
+                {valueOf(q.status) && valueOf(q.status) !== 'completed' && (
+                  <span class="rows__sub">{capitalise(valueOf(q.status) ?? '')}</span>
+                )}
+              </p>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+    {
+      profile.registrations.length > 0 && (
+        <div class="split block">
+          <p class="label">Registration</p>
+          <ul class="rows">
+            {profile.registrations.map((r) => (
+              <li>
+                <span class="rows__when">{valueOf(r.year) ?? ''}</span>
+                <p class="rows__what">
+                  <strong>{r.title}</strong> — {r.body}
+                  {valueOf(r.number) && <span class="rows__sub">No. {valueOf(r.number)}</span>}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+  </section>
+
+  {
+    profile.recognition.length > 0 && (
+      <section class="section">
+        <div class="split">
+          <p class="label">Recognition</p>
+          <ul class="rows">
+            {profile.recognition.map((item) => (
+              <li>
+                <span class="rows__when">{valueOf(item.year) ?? ''}</span>
+                <p class="rows__what">
+                  {valueOf(item.result) && <strong>{valueOf(item.result)} — </strong>}
+                  {item.title}, {item.issuer}
+                  <span class="rows__sub">
+                    {KIND_LABEL[item.kind]}
+                    {item.project && isPublishable(projectById(profile, item.project)) && (
+                      <>
+                        {' · '}
+                        <a href={path(`/projects/${item.project}`)}>
+                          {projectById(profile, item.project).title}
+                        </a>
+                      </>
+                    )}
+                  </span>
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    )
+  }
+
+  {
+    (profile.events.length > 0 || profile.certifications.length > 0) && (
+      <section class="section">
+        {profile.events.length > 0 && (
+          <div class="split">
+            <p class="label">Conferences and workshops</p>
+            <ul class="rows">
+              {profile.events.map((e) => (
+                <li>
+                  <span class="rows__when">{valueOf(e.date) ?? ''}</span>
+                  <p class="rows__what">
+                    <strong>{e.title}</strong>
+                    <span class="rows__sub">
+                      {capitalise(e.role)} · {capitalise(e.kind)} · {e.organiser}
+                      {e.venue && <>, at {e.venue}</>}
+                    </span>
+                    {e.sessions.length > 0 && (
+                      <span class="rows__sub">{e.sessions.join(' · ')}</span>
+                    )}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+        {profile.certifications.length > 0 && (
+          <div class:list={['split', { block: profile.events.length > 0 }]}>
+            <p class="label">Courses</p>
+            <ul class="rows">
+              {profile.certifications.map((c) => (
+                <li>
+                  <span class="rows__when">
+                    {valueOf(c.year) ?? (valueOf(c.status) === 'in progress' ? 'In progress' : '')}
+                  </span>
+                  <p class="rows__what">
+                    <strong>{c.title}</strong>
+                    <span class="rows__sub">
+                      {capitalise(c.kind)} · {c.issuer}
+                      {c.via && <> · via {c.via}</>}
+                      {valueOf(c.status) === 'in progress' && valueOf(c.year) && (
+                        <> · in progress</>
+                      )}
+                    </span>
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </section>
+    )
+  }
+
+  <section class="section">
+    <div class="split">
+      <p class="label">Software</p>
+      <div class="grid">
+        {
+          profile.software.map((group) => (
+            <div>
+              <p class="label label--accent">{group.label}</p>
+              <p>{group.items.join(' · ')}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+    <div class="split block">
+      <p class="label">Skills</p>
+      <div class="grid">
+        {
+          profile.competencies.map((group) => (
+            <div>
+              <p class="label label--accent">{group.label}</p>
+              <ul class="points">
+                {group.items.map((item) => (
+                  <li>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+    <div class="split block">
+      <p class="label">Languages</p>
+      <ul class="list-plain">
+        {
+          profile.languages.map((l) => (
+            <li>
+              {l.name} — {l.proficiency}
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+    <div class="actions">
+      <a class="button button--primary" href={path('/cv')}>Read the CV</a>
+      {
+        profile.research && (
+          <a class="button" href={path('/research')}>
+            Research
+          </a>
+        )
+      }
+      <a class="button" href={path('/projects')}>See the projects</a>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .portrait :global(img),
+  :global(.portrait) {
+    width: min(100%, 16rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 1.5rem;
+  }
+  .role__projects {
+    font-size: 0.9rem;
+    margin-top: 0.75rem;
+  }
+  .block {
+    margin-top: 2.5rem;
+  }
+</style>

@@ -1,0 +1,191 @@
+---
+/**
+ * One project.
+ *
+ * Read in the order a reviewer asks the questions: what is it (title, one sentence, cover),
+ * what did she do on it (the title block, role first), what was the problem and the response
+ * (brief, approach, outcome), and then the evidence — every drawing and image, numbered.
+ */
+import type { GetStaticPaths } from 'astro';
+
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Figure from '../../components/Figure.astro';
+import TitleBlock from '../../components/TitleBlock.astro';
+import ResearchBlock from '../../components/ResearchBlock.astro';
+import { absoluteUrl, path } from '../../config/site';
+import { loadProfile, oneLine, publishedProjects } from '../../lib/profile';
+import { loadCover, loadProjectImages, socialImageUrl } from '../../lib/images';
+import { valueOf } from '../../schema/claim';
+
+export const getStaticPaths = (() => {
+  const profile = loadProfile();
+  const projects = publishedProjects(profile);
+  return projects.map((project, i) => ({
+    params: { id: project.id },
+    props: {
+      project,
+      number: i + 1,
+      previous: projects[i - 1],
+      next: projects[i + 1],
+    },
+  }));
+}) satisfies GetStaticPaths;
+
+const { project, number, previous, next } = Astro.props;
+const profile = loadProfile();
+const { person } = profile;
+
+const cover = await loadCover(profile, project);
+// The cover leads the page, so it is not repeated in the gallery below it.
+const gallery = (await loadProjectImages(profile, project)).filter(
+  (image) => image.file !== project.cover,
+);
+const recognition = profile.recognition.filter((item) => item.project === project.id);
+const coverUrl = await socialImageUrl(cover.meta);
+
+const CONTEXT_LABEL = {
+  academic: 'Academic',
+  professional: 'Professional',
+  competition: 'Competition',
+  personal: 'Self-initiated',
+} as const;
+
+// A project's own graph: a creative work credited to her, with her role stated, so a machine
+// reading the page gets the same answer to "what did she do on it" as a person does.
+const schema = {
+  '@context': 'https://schema.org',
+  // A thesis is typed as one, with the degree it was written for, so it is found as research.
+  '@type': project.research ? 'Thesis' : 'CreativeWork',
+  ...(project.research ? { inSupportOf: project.research.degree } : {}),
+  name: project.title,
+  description: oneLine(project.summary),
+  url: absoluteUrl(`/projects/${project.id}`),
+  image: coverUrl,
+  genre: project.typology.join(', '),
+  ...(valueOf(project.period) ? { dateCreated: valueOf(project.period)?.slice(0, 4) } : {}),
+  ...(valueOf(project.location)
+    ? { locationCreated: { '@type': 'Place', name: valueOf(project.location) } }
+    : {}),
+  creator: {
+    '@type': 'Person',
+    name: person.name,
+    url: absoluteUrl('/'),
+    ...(valueOf(project.role) ? { jobTitle: valueOf(project.role) } : {}),
+  },
+  sourceOrganization: { '@type': 'Organization', name: project.organisation },
+  ...(project.credits ? { contributor: project.credits } : {}),
+};
+---
+
+<BaseLayout
+  title={project.title}
+  description={`${oneLine(project.summary)} ${valueOf(project.role) ? `Role: ${valueOf(project.role)}.` : ''}`.trim()}
+  page={`/projects/${project.id}`}
+  image={coverUrl}
+  schema={schema}
+>
+  <section class="section section--tight">
+    <p class="eyebrow">
+      <a href={path('/projects')}>Projects</a>
+      {` / ${String(number).padStart(2, '0')} · ${CONTEXT_LABEL[project.context]}`}
+    </p>
+    <h1>{project.title}</h1>
+    <p class="lede prose">{project.summary}</p>
+  </section>
+
+  <Figure image={cover} number={1} eager />
+
+  <TitleBlock project={project} />
+
+  <section class="section">
+    <div class="split">
+      <p class="label">Brief</p>
+      <div class="prose"><p>{project.brief}</p></div>
+    </div>
+    <div class="split block">
+      <p class="label">Approach</p>
+      <div class="prose">{project.approach.map((paragraph) => <p>{paragraph}</p>)}</div>
+    </div>
+    {
+      project.outcome && (
+        <div class="split block">
+          <p class="label">Outcome</p>
+          <div class="prose">
+            <p>{project.outcome}</p>
+          </div>
+        </div>
+      )
+    }
+    {
+      recognition.length > 0 && (
+        <div class="split block">
+          <p class="label">Recognition</p>
+          <ul class="list-plain prose">
+            {recognition.map((item) => (
+              <li>
+                {valueOf(item.result) && <strong>{valueOf(item.result)}, </strong>}
+                {item.title} — {item.issuer}
+                {valueOf(item.year) && <>, {valueOf(item.year)}</>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )
+    }
+  </section>
+
+  {
+    project.research && (
+      <section class="section" aria-label="Research">
+        <ResearchBlock research={project.research} />
+      </section>
+    )
+  }
+
+  {
+    gallery.length > 0 && (
+      <section class="section section--tight" aria-label="Drawings and images">
+        {gallery.map((image, i) => (
+          <Figure image={image} number={i + 2} />
+        ))}
+      </section>
+    )
+  }
+
+  <nav class="pager section--tight" aria-label="More projects">
+    <div>
+      {
+        previous && (
+          <a href={path(`/projects/${previous.id}`)}>
+            <span class="label">Previous</span>
+            <br />
+            <strong>{previous.title}</strong>
+          </a>
+        )
+      }
+    </div>
+    <div class="pager__next">
+      {
+        next && (
+          <a href={path(`/projects/${next.id}`)}>
+            <span class="label">Next</span>
+            <br />
+            <strong>{next.title}</strong>
+          </a>
+        )
+      }
+    </div>
+  </nav>
+</BaseLayout>
+
+<style>
+  .block {
+    margin-top: 2.5rem;
+  }
+  .pager {
+    margin-bottom: var(--space);
+  }
+  .pager .label {
+    margin: 0;
+  }
+</style>

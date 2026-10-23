@@ -1,0 +1,147 @@
+---
+/**
+ * Homepage — work-first.
+ *
+ * The job of this page is to get a hiring partner to open one project and then send one
+ * email. So it opens with one sentence saying what Amna does, states availability plainly,
+ * puts the portfolio PDF, the CV and email above the fold, and then shows the work itself —
+ * the featured projects, image-led, in the order she chose. Evidence before adjectives.
+ */
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import { path } from '../config/site';
+import {
+  featuredProjects,
+  formatPeriod,
+  loadProfile,
+  orderedExperience,
+  publishedProjects,
+  telHref,
+  variantById,
+} from '../lib/profile';
+import { cvPath, portfolioPdfPath } from '../lib/files';
+
+const profile = loadProfile();
+const { person } = profile;
+const featured = featuredProjects(profile);
+const total = publishedProjects(profile).length;
+const cv = variantById(profile, 'general');
+const roles = orderedExperience(profile).slice(0, 4);
+---
+
+<BaseLayout
+  title={person.headline}
+  description={`${person.name}, ${person.headline.toLowerCase()} in ${person.location.city}. ${person.statement}`}
+  page="/"
+>
+  <section class="section hero">
+    <p class="eyebrow">{person.headline} · {person.location.city}, {person.location.country}</p>
+    <h1 class="hero__statement">{person.statement}</h1>
+    <p class="lede prose"><strong>{person.availability}</strong></p>
+    <div class="actions">
+      <a class="button button--primary" href={path('/projects')}>See the work</a>
+      <a class="button" href={path(portfolioPdfPath(profile))} download>Portfolio (PDF)</a>
+      <a class="button" href={path(cvPath(cv.filename, 'pdf'))} download>CV (PDF)</a>
+      <a class="button" href={`mailto:${person.email}`}>{person.email}</a>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section__head">
+      <p class="label">Selected work</p>
+      {total > featured.length && <a href={path('/projects')}>All {total} projects</a>}
+    </div>
+    <div class="cards cards--featured">
+      {
+        featured.map((project, i) => (
+          <ProjectCard project={project} index={i + 1} featured eager={i === 0} />
+        ))
+      }
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="split">
+      <p class="label">In short</p>
+      <div class="grid">
+        {
+          profile.proofPoints.map((point) => (
+            <div>
+              <p class="label label--accent">{point.label}</p>
+              <p>{point.text}</p>
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+
+  {
+    roles.length > 0 && (
+      <section class="section">
+        <div class="split">
+          <p class="label">Experience</p>
+          <div>
+            <ul class="rows">
+              {roles.map((role) => (
+                <li>
+                  <span class="rows__when">{formatPeriod(role)}</span>
+                  <p class="rows__what">
+                    <strong>{role.title}</strong>, {role.organisation}
+                    <span class="rows__sub">{role.organisationContext}</span>
+                  </p>
+                </li>
+              ))}
+            </ul>
+            <div class="actions">
+              <a class="button" href={path('/about')}>
+                About, education and skills
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    )
+  }
+
+  <section class="section">
+    <div class="split">
+      <p class="label">Get in touch</p>
+      <div class="prose">
+        <p class="lede">{profile.about[profile.about.length - 1]}</p>
+        <p>
+          The quickest route is email: <a href={`mailto:${person.email}`}>{person.email}</a>
+          {
+            person.phone && (
+              <>
+                {' '}
+                — or call <a href={telHref(person.phone)}>{person.phone}</a>
+              </>
+            )
+          }.
+        </p>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  /* Sized for a sentence, not a slogan: a statement of ~150 characters should read in four or
+     five lines on a desktop, not seven. */
+  .hero__statement {
+    max-width: 28ch;
+    font-size: clamp(2rem, 1.2rem + 3vw, 3.5rem);
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
+  }
+
+  .section__head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+  }
+  .section__head a {
+    font-size: 0.9rem;
+  }
+</style>

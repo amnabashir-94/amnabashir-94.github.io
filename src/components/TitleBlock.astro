@@ -1,0 +1,51 @@
+---
+/**
+ * A project's facts as a title block — the ruled box in the corner of a drawing sheet.
+ *
+ * Only known facts render: a `missing` claim drops its cell rather than printing a dash, and
+ * a strict claim (period, area) renders only when verified. The role cell is always first,
+ * because "what did she do on this?" is the question a reader of a team project asks first.
+ */
+import { capitalise } from '../lib/profile';
+import { valueOf } from '../schema/claim';
+import type { Project } from '../schema/profile';
+
+interface Props {
+  project: Project;
+}
+
+const { project } = Astro.props;
+
+const CONTEXT_LABEL: Record<Project['context'], string> = {
+  academic: 'Studio',
+  professional: 'Practice',
+  competition: 'Competition',
+  personal: 'Self-initiated',
+};
+
+const status = valueOf(project.status);
+const cells: Array<[string, string | undefined]> = [
+  ['Role', valueOf(project.role)],
+  [CONTEXT_LABEL[project.context], project.organisation],
+  ['Location', valueOf(project.location)],
+  ['Year', valueOf(project.period)],
+  ['Status', status ? capitalise(status) : undefined],
+  ['Typology', project.typology.join(', ')],
+  ['Area', valueOf(project.area)],
+  ['Tools', project.software.length ? project.software.join(', ') : undefined],
+  ['Credits', project.credits],
+];
+---
+
+<dl class="titleblock">
+  {
+    cells
+      .filter((cell): cell is [string, string] => cell[1] !== undefined)
+      .map(([label, value]) => (
+        <div>
+          <dt>{label}</dt>
+          <dd>{value}</dd>
+        </div>
+      ))
+  }
+</dl>

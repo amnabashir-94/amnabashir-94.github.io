@@ -1,0 +1,35 @@
+---
+/**
+ * Every published project, featured ones first in their curated order, then newest first.
+ *
+ * Only projects that pass `isPublishable()` appear — drafts and professional work without the
+ * firm's verified clearance are absent here exactly as they are from every other surface.
+ */
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import ProjectCard from '../../components/ProjectCard.astro';
+import { loadProfile, publishedProjects } from '../../lib/profile';
+
+const profile = loadProfile();
+const projects = publishedProjects(profile);
+const typologies = [...new Set(projects.flatMap((project) => project.typology))];
+---
+
+<BaseLayout
+  title="Projects"
+  description={`Architecture projects by ${profile.person.name}: ${typologies.join(', ').toLowerCase()}.`}
+  page="/projects"
+>
+  <section class="section section--tight">
+    <p class="eyebrow">Projects · {projects.length}</p>
+    <h1>Work</h1>
+    <p class="lede prose">
+      {typologies.join(' · ')}
+    </p>
+  </section>
+
+  <section class="section section--tight">
+    <div class="cards">
+      {projects.map((project, i) => <ProjectCard project={project} index={i + 1} eager={i < 3} />)}
+    </div>
+  </section>
+</BaseLayout>

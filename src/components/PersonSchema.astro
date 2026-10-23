@@ -1,0 +1,79 @@
+---
+/**
+ * schema.org Person graph, on every page.
+ *
+ * This is how a machine that is not a browser understands who Amna is. Search engines use it
+ * for entity resolution, and assistants increasingly lean on structured data over prose when
+ * answering "who is X" — which is exactly what a hiring partner asks about a name on a
+ * shortlist. It costs nothing, and the page otherwise says all of this only in prose.
+ */
+import { absoluteUrl } from '../config/site';
+import { formatPeriod, loadProfile, orderedExperience, publishedProjects } from '../lib/profile';
+import { loadPortrait, socialImageUrl } from '../lib/images';
+import { valueOf } from '../schema/claim';
+
+const profile = loadProfile();
+const { person } = profile;
+const portrait = await loadPortrait(profile);
+
+const sameAs = Object.values(person.links)
+  .map((link) => valueOf(link))
+  .filter((url): url is string => url !== undefined);
+
+const graph = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: person.name,
+  jobTitle: person.headline,
+  description: profile.about[0]?.replace(/\s+/g, ' ').trim(),
+  email: `mailto:${person.email}`,
+  ...(person.phone ? { telephone: person.phone } : {}),
+  url: absoluteUrl('/'),
+  ...(portrait ? { image: await socialImageUrl(portrait) } : {}),
+  ...(sameAs.length ? { sameAs } : {}),
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: person.location.city,
+    addressCountry: person.location.countryCode,
+  },
+  knowsAbout: [
+    ...profile.competencies.flatMap((group) => group.items),
+    ...profile.software.flatMap((group) => group.items),
+  ],
+  knowsLanguage: profile.languages.map((language) => language.name),
+  alumniOf: profile.education.map((q) => ({
+    '@type': 'EducationalOrganization',
+    name: q.awardingBody ?? q.institution,
+  })),
+  hasCredential: profile.registrations.map((r) => ({
+    '@type': 'EducationalOccupationalCredential',
+    credentialCategory: 'Professional registration',
+    name: r.title,
+    recognizedBy: { '@type': 'Organization', name: r.body },
+    ...(r.year.state === 'verified' ? { dateCreated: String(r.year.value) } : {}),
+  })),
+  hasOccupation: orderedExperience(profile).map((role) => ({
+    '@type': 'Occupation',
+    name: role.title,
+    ...(valueOf(role.location)
+      ? { occupationLocation: { '@type': 'City', name: valueOf(role.location) } }
+      : {}),
+    description: `${role.organisation} — ${formatPeriod(role)}`,
+  })),
+  worksFor: orderedExperience(profile)
+    .filter((role) => role.end === undefined)
+    .map((role) => ({ '@type': 'Organization', name: role.organisation })),
+  // The portfolio itself, as works she is credited on. Only what is published is listed. A
+  // thesis is typed as one, so academic search and assistants see research, not just design.
+  subjectOf: publishedProjects(profile).map((project) => ({
+    '@type': project.research ? 'Thesis' : 'CreativeWork',
+    name: project.title,
+    url: absoluteUrl(`/projects/${project.id}`),
+  })),
+};
+// Research interests lead the subjects she knows about, when recorded.
+const interests = valueOf(profile.research?.interests);
+if (interests) graph.knowsAbout = [...interests, ...graph.knowsAbout];
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(graph)} is:inline />

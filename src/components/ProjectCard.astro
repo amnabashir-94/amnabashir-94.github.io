@@ -1,0 +1,49 @@
+---
+/**
+ * One project in a grid: the cover image, a register number, the title and a line of facts.
+ *
+ * The image leads because it is what an architect is judged on first; the number reads like a
+ * drawing register and gives the grid an order a reader can refer to ("the third one").
+ */
+import { Picture } from 'astro:assets';
+
+import { path } from '../config/site';
+import { loadProfile, projectMeta } from '../lib/profile';
+import { loadCover, widthsFor } from '../lib/images';
+import type { Project } from '../schema/profile';
+
+interface Props {
+  project: Project;
+  /** 1-based position in the grid, shown as `01`, `02`… */
+  index: number;
+  /** Featured cards are larger, so they ask for larger renditions. */
+  featured?: boolean;
+  /** Load eagerly — only for the first card above the fold. */
+  eager?: boolean;
+}
+
+const { project, index, featured = false, eager = false } = Astro.props;
+const profile = loadProfile();
+const cover = await loadCover(profile, project);
+
+const sizes = featured
+  ? '(min-width: 78rem) 38rem, (min-width: 60rem) 48vw, 100vw'
+  : '(min-width: 78rem) 25rem, (min-width: 48rem) 48vw, 100vw';
+---
+
+<a class="card" href={path(`/projects/${project.id}`)}>
+  <div class:list={['card__media', { 'card__media--mat': cover.uncroppable }]}>
+    <Picture
+      src={cover.meta}
+      alt={cover.alt}
+      formats={['avif', 'webp']}
+      widths={widthsFor(cover.meta, [480, 800, 1200, 1600])}
+      sizes={sizes}
+      loading={eager ? 'eager' : 'lazy'}
+      decoding="async"
+    />
+  </div>
+  <p class="card__index">{String(index).padStart(2, '0')}</p>
+  <h3 class="card__title">{project.title}</h3>
+  <p class="card__meta">{projectMeta(project)}</p>
+</a>

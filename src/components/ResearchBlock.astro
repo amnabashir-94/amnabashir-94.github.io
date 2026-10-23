@@ -1,0 +1,124 @@
+---
+/**
+ * The research layer of a project: questions, methods, fieldwork, findings, recommendations.
+ *
+ * Laid out in the order a reviewer checks research — what was asked, how it was found out,
+ * where, what was found, what should change — so a scholarship panel can judge the thesis in
+ * the two minutes it gives a portfolio. Sample sizes appear only when verified: they are the
+ * first number a reviewer checks.
+ */
+import { valueOf } from '../schema/claim';
+import type { ProjectResearch } from '../schema/profile';
+
+interface Props {
+  research: ProjectResearch;
+  /** Show the recommendations too. The Research page shows findings only and links here. */
+  full?: boolean;
+}
+
+const { research, full = true } = Astro.props;
+const survey = valueOf(research.sample?.survey);
+const interviews = valueOf(research.sample?.interviews);
+const sample = [survey && `Survey: ${survey}`, interviews && `Interviews: ${interviews}`]
+  .filter(Boolean)
+  .join(' · ');
+---
+
+<div class="research">
+  <div class="split">
+    <p class="label">Research questions</p>
+    <ol class="questions prose">
+      {research.questions.map((q) => <li>{q}</li>)}
+    </ol>
+  </div>
+
+  <div class="split block">
+    <p class="label">Methods</p>
+    <div>
+      <div class="grid">
+        {
+          research.methods.map((m) => (
+            <div>
+              <p class="label label--accent">{m.label}</p>
+              <p>{m.text}</p>
+            </div>
+          ))
+        }
+      </div>
+      {sample && <p class="sample">{sample}</p>}
+      {
+        research.sites.length > 0 && (
+          <p class="sample">
+            <span class="label">Fieldwork</span> {research.sites.join(' · ')}
+          </p>
+        )
+      }
+    </div>
+  </div>
+
+  <div class="split block">
+    <p class="label">Findings</p>
+    <ul class="rows">
+      {
+        research.findings.map((f) => (
+          <li>
+            <span class="rows__when">{f.label}</span>
+            <p class="rows__what">{f.text}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+
+  {
+    full && research.recommendations.length > 0 && (
+      <div class="split block">
+        <p class="label">Recommendations</p>
+        <div class="grid">
+          {research.recommendations.map((r) => (
+            <div>
+              <p class="label label--accent">{r.label}</p>
+              <p>{r.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .block {
+    margin-top: 2.75rem;
+  }
+  .questions {
+    margin: 0;
+    padding-left: 1.3rem;
+    font-size: 1.05rem;
+  }
+  .questions li {
+    margin-bottom: 0.6rem;
+  }
+  .questions li::marker {
+    font-family: var(--font-mono);
+    font-size: 0.8em;
+    color: var(--accent);
+  }
+  .sample {
+    margin-top: 1.5rem;
+    font-size: 0.92rem;
+    color: var(--ink-muted);
+  }
+  .sample .label {
+    margin: 0 0.75rem 0 0;
+    display: inline;
+  }
+  .research :global(.rows > li) {
+    grid-template-columns: minmax(9rem, 14rem) 1fr;
+  }
+  @media (max-width: 40rem) {
+    .research :global(.rows > li) {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
