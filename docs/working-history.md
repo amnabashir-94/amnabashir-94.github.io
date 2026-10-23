@@ -99,5 +99,13 @@ original; figures now always get their native width and are never stretched past
 Lahore" appeared wherever an institution's name already held the city. The portfolio PDF printed a
 contents page for one project and an approach sheet with nothing beside the text; both now skip.
 
-**Open.** Confirmation of the inferences and the degree's status and name; course and event years;
-images from practice and the B.Arch thesis; her GitHub username; whether to publish her portrait.
+**Settled at the close of the cycle.** The degree is the Master of Architecture — the "Master of
+Philosophy" line on the thesis title page is not the degree — and the thesis has been submitted and is
+awaiting defence, so both CVs read "2019–present, thesis submitted" with the award year left blank. No
+photograph on the public site: the CV portrait was cropped as a candidate and deleted unpublished.
+Commits carry her CV address, ar.amnabashir@gmail.com.
+
+**Open, for the next cycle.** Confirmation of the remaining inferences (role cities, research
+interests, the LinkedIn address); course, event and membership years; the 2017–2019 gap; what "(CAD)"
+stands for; images from practice (with permission) and from the B.Arch thesis; her fieldwork
+photographs; her GitHub username, then publishing.
