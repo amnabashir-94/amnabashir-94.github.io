@@ -1,7 +1,137 @@
 # Working history
 
 A dated log of what changed and why. The changelog says what shipped; this says why it was built
-that way, for whoever picks it up next.
+that way, for whoever picks it up next. **Newest entry first**: add each new entry at the top. Each
+entry ends with what did not work.
+
+## 2026-11-01 (later) — published, verified live, and two fixes
+
+**Published.** The repository was renamed to `amnabashir-94.github.io`, confirmed through the API
+(Pages serves from the root, builds through Actions, and `main` may deploy), then pushed. Both
+workflows passed. The live site was then checked against the local build file by file, not by the
+workflow's colour. 32 of 36 files were byte-identical: every page, the text surfaces, the
+stylesheet, the JPEG and WebP images, and the five downloads with their content types. The other
+four were the AVIF renditions of the site map: same dimensions, pixels within the noise of a lossy
+encode, and visually sound. sharp's AVIF encoder simply differs between Windows and the Linux
+runner. Screenshots of the live site, at phone and desktop widths in both schemes, were reviewed.
+
+**A promise the code did not keep.** The image loader's comment said only rendered images reach
+`dist/`, so an unpublished project's never would. The local build disproved it: all 15 fixture
+images were in it, among them the withheld fixture project's. A lazy `import.meta.glob` defers
+loading, not emitting, so every file it matches is copied into the site as an original. The live
+site was unaffected, because CI never generates the fixture's images and every committed image is
+published. But a firm's drawings committed before clearance would have been served at an unlinked,
+public address. The fix has three parts:
+
+- the glob moved to `image-loaders.ts` and excludes the fixture's folder;
+- a fixture build swaps in its own loader through an alias, keyed on the profile's `sample` flag;
+- `check-dist` fails on any image no built file names.
+
+The rule now written down is the honest one: the repository is public, so a project without
+clearance keeps its images out of it altogether.
+
+**Trailing slashes.** `path()` now gives page paths the slash the sitemap uses and leaves file names
+alone. `check-dist` fails on a slash-less page link, and on a canonical URL the sitemap does not list.
+
+**Guards proven by failing.** Run against the build that still had both defects, the new checks
+failed on 46 slash-less links, the 7 canonical URLs not in the sitemap (the home page's `/` already
+agreed), and exactly the 15 fixture images. After the fixes, the real build passed even with the
+fixture's images on disk. The fixture build carried none of Amna's images, and it flagged only its
+withheld project's image, as a warning, since it is never deployed.
+
+**What did not work.**
+
+- **The first proof of the image check proved nothing.** The stray image was a copy of her site map,
+  and the build passed. Rollup merges emitted files with identical bytes, and Astro removes the map's
+  original because only its resized versions are used, so the copy disappeared with it. A mirrored
+  re-encode, with different bytes, did reach `dist/`, and the build failed as it should. Recorded as a
+  footgun.
+- **Regenerating the downloads changed their bytes but not their content.** Both DOCX files had
+  identical document XML, and all three PDFs had identical content streams. Only the creation date
+  and document ID differed. The committed files were restored, so the live downloads stay the ones
+  already verified.
+
+## 2026-11-01 — the address, and getting ready to publish
+
+**Access without her password.** Amna's account added Nasik's (`nasikabbas`) as a collaborator with
+write access, and pushes go through his existing login. Her credentials never reach this machine,
+and the commits are still authored under her name. The cost is that repository and Pages settings
+stay owner-only, so those changes are made from her account.
+
+**The address.** Her username is `amnabashir-94`, so the site is `https://amnabashir-94.github.io/`.
+That one constant replaced the `.invalid` placeholder, and every surface the placeholder had kept
+the address out of picked it up: canonical URLs, the sitemap, `robots.txt`, the JSON-LD, the CV
+contact lines, the portfolio PDF's cover and closing sheet, and the LinkedIn pack. The five downloads
+were regenerated and read. Both CVs stay at two pages and the portfolio at four sheets, and the
+longer contact line fits on one line. `check-dist` was run in CI mode locally, where it refuses the
+placeholder, and passed.
+
+**What did not go to plan.**
+
+- **The repository was created as `amnabashir`**, not `amnabashir-94.github.io`. GitHub serves that
+  name as a project site under `/amnabashir/`. The repository was read through the API before
+  anything was changed, which caught it. The other option was to keep the name and set `BASE_PATH`,
+  but that gives a longer link that repeats her name and puts `robots.txt` where crawlers never read
+  it. Nasik chose to rename the repository to match the decision on record.
+- **The 0.2.0 release left `package-lock.json` at 0.1.0.** The bump was made by hand in
+  `package.json`. It was found by reading the lock while preparing this release, and a rule against
+  it already existed, so it got a mechanism, not another sentence: `scripts/check-version.ts` in
+  `npm run check`. It was proven by failing twice: against the 0.2.0 files (lock behind) and after
+  the 0.3.0 bump, before the changelog entry (changelog behind).
+- **The LinkedIn pack ended the thesis credits with "UET Lahore.."**, from a full stop in the data
+  plus one from the generator. It was found in the diff when the address changed.
+
+**Found and left open.** Canonical URLs, internal links and the JSON-LD write page paths without a
+trailing slash (`/about`), while the sitemap writes them with one (`/about/`). GitHub Pages answers
+the slash-less form with a redirect, so it works, but canonical and sitemap should agree. The fix is
+site-wide in `path()` (and `trailingSlash` in `astro.config.ts`), so it did not belong in the
+publishing change. _(Fixed the same day in 0.3.1, above.)_
+
+## 2026-10-23 (later) — her real content, and scholarships as a second purpose
+
+**Sources.** Two files arrived: her CV and her M.Arch thesis (Draft II, 313 pages). The CV turned out
+to be a Photoshop export with no text layer — two characters of extractable text across two pages —
+so an applicant-tracking system would read it as blank. The generated CVs fix that as a side effect.
+The thesis was read in full where it carries facts: front matter, questions, method, sites, every
+results section's conclusion, the recommendations and the appendices.
+
+**Scholarships changed the shape, not just the content.** Nasik's brief added scholarships to jobs.
+A panel reads differently from a practice: education and grades first, research as questions and
+evidence, conferences and teaching as signs of a sustained interest. So: an academic CV variant, a
+research layer on projects, a Research page, a research sheet in the portfolio PDF, and an
+applications pack with word counts for form boxes. The pack gathers the facts and her own origin
+story for a personal statement but deliberately does not write the statement: panels read for her
+voice.
+
+**Why the working documents left the repository.** The thesis draft disagrees with itself in ways a
+reviewer would catch — four different survey sizes, a degree named M.Phil on its title page and
+M.Arch everywhere else, charts without units. Writing that into a public repository under her name
+would hand a reviewer the critique. The intake sheet, the applications pack and a hand-written thesis
+review now live in a git-ignored `private/`, and the bases in the public data file stay neutral.
+
+**What was deliberately not published.** No survey sample size (four conflicting figures; the
+demographics appendix implies 30 per scheme). None of the activity charts (no units; text and chart
+disagree in places). None of the LDA plans, estate-agent land-use maps or Google Mobility charts —
+cited properly in a thesis, but not hers to present as her work. Her fieldwork photographs would be
+the best image for the research page; none are in the thesis, so they are asked for.
+
+**Where looking at the output changed things.** The academic CV ran to a third page for two lines —
+resolved by dropping "References: available on request", which panels assume and which costs a page.
+The site map was soft at desktop width because the responsive widths dropped every size above the
+original; figures now always get their native width and are never stretched past it. "Lahore,
+Lahore" appeared wherever an institution's name already held the city. The portfolio PDF printed a
+contents page for one project and an approach sheet with nothing beside the text; both now skip.
+
+**Settled at the close of the cycle.** The degree is the Master of Architecture — the "Master of
+Philosophy" line on the thesis title page is not the degree — and the thesis has been submitted and is
+awaiting defence, so both CVs read "2019–present, thesis submitted" with the award year left blank. No
+photograph on the public site: the CV portrait was cropped as a candidate and deleted unpublished.
+Commits carry her CV address, ar.amnabashir@gmail.com.
+
+**Open, for the next cycle.** Confirmation of the remaining inferences (role cities, research
+interests, the LinkedIn address); course, event and membership years; the 2017–2019 gap; what "(CAD)"
+stands for; images from practice (with permission) and from the B.Arch thesis; her fieldwork
+photographs; her GitHub username, then publishing.
 
 ## 2026-10-23 — the system, built ahead of its content
 
@@ -63,132 +193,3 @@ was committed under anyone else's identity in the meantime.
 
 **Open at handover.** Her real profile and images; the GitHub username; which projects lead; the
 roles she is targeting. Tracked in the private intake sheet.
-
-## 2026-10-23 (later) — her real content, and scholarships as a second purpose
-
-**Sources.** Two files arrived: her CV and her M.Arch thesis (Draft II, 313 pages). The CV turned out
-to be a Photoshop export with no text layer — two characters of extractable text across two pages —
-so an applicant-tracking system would read it as blank. The generated CVs fix that as a side effect.
-The thesis was read in full where it carries facts: front matter, questions, method, sites, every
-results section's conclusion, the recommendations and the appendices.
-
-**Scholarships changed the shape, not just the content.** Nasik's brief added scholarships to jobs.
-A panel reads differently from a practice: education and grades first, research as questions and
-evidence, conferences and teaching as signs of a sustained interest. So: an academic CV variant, a
-research layer on projects, a Research page, a research sheet in the portfolio PDF, and an
-applications pack with word counts for form boxes. The pack gathers the facts and her own origin
-story for a personal statement but deliberately does not write the statement: panels read for her
-voice.
-
-**Why the working documents left the repository.** The thesis draft disagrees with itself in ways a
-reviewer would catch — four different survey sizes, a degree named M.Phil on its title page and
-M.Arch everywhere else, charts without units. Writing that into a public repository under her name
-would hand a reviewer the critique. The intake sheet, the applications pack and a hand-written thesis
-review now live in a git-ignored `private/`, and the bases in the public data file stay neutral.
-
-**What was deliberately not published.** No survey sample size (four conflicting figures; the
-demographics appendix implies 30 per scheme). None of the activity charts (no units; text and chart
-disagree in places). None of the LDA plans, estate-agent land-use maps or Google Mobility charts —
-cited properly in a thesis, but not hers to present as her work. Her fieldwork photographs would be
-the best image for the research page; none are in the thesis, so they are asked for.
-
-**Where looking at the output changed things.** The academic CV ran to a third page for two lines —
-resolved by dropping "References: available on request", which panels assume and which costs a page.
-The site map was soft at desktop width because the responsive widths dropped every size above the
-original; figures now always get their native width and are never stretched past it. "Lahore,
-Lahore" appeared wherever an institution's name already held the city. The portfolio PDF printed a
-contents page for one project and an approach sheet with nothing beside the text; both now skip.
-
-**Settled at the close of the cycle.** The degree is the Master of Architecture — the "Master of
-Philosophy" line on the thesis title page is not the degree — and the thesis has been submitted and is
-awaiting defence, so both CVs read "2019–present, thesis submitted" with the award year left blank. No
-photograph on the public site: the CV portrait was cropped as a candidate and deleted unpublished.
-Commits carry her CV address, ar.amnabashir@gmail.com.
-
-**Open, for the next cycle.** Confirmation of the remaining inferences (role cities, research
-interests, the LinkedIn address); course, event and membership years; the 2017–2019 gap; what "(CAD)"
-stands for; images from practice (with permission) and from the B.Arch thesis; her fieldwork
-photographs; her GitHub username, then publishing.
-
-## 2026-11-01 — the address, and getting ready to publish
-
-**Access without her password.** Amna's account added Nasik's (`nasikabbas`) as a collaborator with
-write access, and pushes go through his existing login. Her credentials never reach this machine,
-and the commits are still authored under her name. The cost is that repository and Pages settings
-stay owner-only, so those changes are made from her account.
-
-**The address.** Her username is `amnabashir-94`, so the site is `https://amnabashir-94.github.io/`.
-That one constant replaced the `.invalid` placeholder, and every surface the placeholder had kept
-the address out of picked it up: canonical URLs, the sitemap, `robots.txt`, the JSON-LD, the CV
-contact lines, the portfolio PDF's cover and closing sheet, and the LinkedIn pack. The five downloads
-were regenerated and read. Both CVs stay at two pages and the portfolio at four sheets, and the
-longer contact line fits on one line. `check-dist` was run in CI mode locally, where it refuses the
-placeholder, and passed.
-
-**What did not go to plan.**
-
-- **The repository was created as `amnabashir`**, not `amnabashir-94.github.io`. GitHub serves that
-  name as a project site under `/amnabashir/`. The repository was read through the API before
-  anything was changed, which caught it. The other option was to keep the name and set `BASE_PATH`,
-  but that gives a longer link that repeats her name and puts `robots.txt` where crawlers never read
-  it. Nasik chose to rename the repository to match the decision on record.
-- **The 0.2.0 release left `package-lock.json` at 0.1.0.** The bump was made by hand in
-  `package.json`. It was found by reading the lock while preparing this release, and a rule against
-  it already existed, so it got a mechanism, not another sentence: `scripts/check-version.ts` in
-  `npm run check`. It was proven by failing twice: against the 0.2.0 files (lock behind) and after
-  the 0.3.0 bump, before the changelog entry (changelog behind).
-- **The LinkedIn pack ended the thesis credits with "UET Lahore.."**, from a full stop in the data
-  plus one from the generator. It was found in the diff when the address changed.
-
-**Found and left open.** Canonical URLs, internal links and the JSON-LD write page paths without a
-trailing slash (`/about`), while the sitemap writes them with one (`/about/`). GitHub Pages answers
-the slash-less form with a redirect, so it works, but canonical and sitemap should agree. The fix is
-site-wide in `path()` (and `trailingSlash` in `astro.config.ts`), so it did not belong in the
-publishing change. _(Fixed the same day in 0.3.1, below.)_
-
-## 2026-11-01 (later) — published, verified live, and two fixes
-
-**Published.** The repository was renamed to `amnabashir-94.github.io`, confirmed through the API
-(Pages serves from the root, builds through Actions, and `main` may deploy), then pushed. Both
-workflows passed. The live site was then checked against the local build file by file, not by the
-workflow's colour. 32 of 36 files were byte-identical: every page, the text surfaces, the
-stylesheet, the JPEG and WebP images, and the five downloads with their content types. The other
-four were the AVIF renditions of the site map: same dimensions, pixels within the noise of a lossy
-encode, and visually sound. sharp's AVIF encoder simply differs between Windows and the Linux
-runner. Screenshots of the live site, at phone and desktop widths in both schemes, were reviewed.
-
-**A promise the code did not keep.** The image loader's comment said only rendered images reach
-`dist/`, so an unpublished project's never would. The local build disproved it: all 15 fixture
-images were in it, among them the withheld fixture project's. A lazy `import.meta.glob` defers
-loading, not emitting, so every file it matches is copied into the site as an original. The live
-site was unaffected, because CI never generates the fixture's images and every committed image is
-published. But a firm's drawings committed before clearance would have been served at an unlinked,
-public address. The fix has three parts:
-
-- the glob moved to `image-loaders.ts` and excludes the fixture's folder;
-- a fixture build swaps in its own loader through an alias, keyed on the profile's `sample` flag;
-- `check-dist` fails on any image no built file names.
-
-The rule now written down is the honest one: the repository is public, so a project without
-clearance keeps its images out of it altogether.
-
-**Trailing slashes.** `path()` now gives page paths the slash the sitemap uses and leaves file names
-alone. `check-dist` fails on a slash-less page link, and on a canonical URL the sitemap does not list.
-
-**Guards proven by failing.** Run against the build that still had both defects, the new checks
-failed on 46 slash-less links, the 7 canonical URLs not in the sitemap (the home page's `/` already
-agreed), and exactly the 15 fixture images. After the fixes, the real build passed even with the
-fixture's images on disk. The fixture build carried none of Amna's images, and it flagged only its
-withheld project's image, as a warning, since it is never deployed.
-
-**What did not work.**
-
-- **The first proof of the image check proved nothing.** The stray image was a copy of her site map,
-  and the build passed. Rollup merges emitted files with identical bytes, and Astro removes the map's
-  original because only its resized versions are used, so the copy disappeared with it. A mirrored
-  re-encode, with different bytes, did reach `dist/`, and the build failed as it should. Recorded as a
-  footgun.
-- **Regenerating the downloads changed their bytes but not their content.** Both DOCX files had
-  identical document XML, and all three PDFs had identical content streams. Only the creation date
-  and document ID differed. The committed files were restored, so the live downloads stay the ones
-  already verified.
