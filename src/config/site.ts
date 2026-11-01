@@ -11,13 +11,13 @@
 /**
  * Origin the site is served from. No trailing slash.
  *
- * Decided 2026-10-23: a `<username>.github.io` user-site repository, so this becomes
- * `https://<username>.github.io`. Until Amna's username is confirmed it is the reserved `.invalid`
- * placeholder — deliberately unresolvable rather than a guess, so a wrong origin can never be
- * published into canonical URLs, the sitemap or the JSON-LD. `check-dist` refuses it in CI, which
- * is the deploy path, while local builds still run.
+ * Decided 2026-10-23: a `<username>.github.io` user-site repository. Set 2026-11-01 to Amna's
+ * account, `amnabashir-94`, whose repository `amnabashir-94.github.io` serves from the root. Until
+ * then it was the reserved `.invalid` placeholder, deliberately unresolvable rather than a guess.
+ * A fork or a move back to it is still caught: `check-dist` refuses any `.invalid` origin in CI,
+ * which is the deploy path.
  */
-export const SITE_URL = 'https://github-username.invalid';
+export const SITE_URL = 'https://amnabashir-94.github.io';
 
 /**
  * Sub-path the site is served under, with a leading and no trailing slash.

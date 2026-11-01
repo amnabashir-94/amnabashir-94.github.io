@@ -28,7 +28,7 @@ Software: AutoCAD, Revit, SketchUp, Adobe Photoshop, Adobe Illustrator, Prezi, M
 
 Open to architecture and urban-design roles, and to funded postgraduate study in urban design and the planning of inclusive public space.
 
-Portfolio: (portfolio URL — set once the GitHub username is known)
+Portfolio: https://amnabashir-94.github.io/
 ```
 
 ## 3. Experience
@@ -93,7 +93,7 @@ project page, so nobody comparing the two finds a difference.
 
 **Associated with:** Department of Architecture, University of Engineering and Technology, Lahore  
 **Dates:** 2025  
-**Link:** (project URL once the site is live)
+**Link:** https://amnabashir-94.github.io/projects/covid-public-spaces-lahore
 
 How the COVID-19 pandemic changed the way people in four Lahore neighbourhoods use their parks, markets and mosques — and what it revealed about who those spaces were built for. Role: Sole researcher and author. Supervised by Dr. Maryam Siddiq, Department of Architecture, UET Lahore..
 
