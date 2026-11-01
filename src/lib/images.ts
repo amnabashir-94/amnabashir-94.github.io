@@ -2,9 +2,10 @@
  * Resolve the image files named in the profile to Astro image metadata.
  *
  * The profile names images by file name; Astro's image pipeline needs an imported module.
- * `import.meta.glob` bridges the two without an import per image, and because it is lazy, only
- * the images a page actually renders are processed and emitted — an unpublished project's
- * images never reach `dist/`.
+ * `import.meta.glob` (in `image-loaders.ts`) bridges the two without an import per image. Only
+ * the images a page renders are resized, but every file the glob matches is copied into `dist/`
+ * as an original, rendered or not — so what a build may publish is decided by which files it can
+ * reach, not by which ones a page uses. `check-dist` fails on any image no page uses.
  *
  * Astro-only: `import.meta.glob` exists inside Vite and nowhere else. Node scripts that need to
  * know where images live use `projectImageDir()` from `files.ts` instead.
@@ -14,12 +15,10 @@ import { getImage } from 'astro:assets';
 
 import { absoluteUrl, BASE_PATH, SITE_URL } from '../config/site';
 import { projectImageDir } from './files';
+// Swapped for `./image-loaders.sample` in a fixture build; see astro.config.ts.
+import { LOADERS } from './image-loaders';
 import type { Profile, Project, ProjectImage } from '../schema/profile';
 import { UNCROPPABLE_KINDS } from '../schema/profile';
-
-const LOADERS = import.meta.glob<{ default: ImageMetadata }>(
-  '/src/assets/**/*.{jpg,jpeg,png,webp,avif}',
-);
 
 /** Portrait file names, in preference order. Dropping one into `src/assets/` is all it takes. */
 const PORTRAIT_CANDIDATES = ['portrait.jpg', 'portrait.jpeg', 'portrait.png', 'portrait.webp'];
