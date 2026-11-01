@@ -70,7 +70,7 @@ which an applicant-tracking system reads as blank. Nothing is edited by hand.
 | ------------------------------------------- | -------------------------------------------------------------------------- |
 | `npm run dev`                               | Local dev server                                                           |
 | `npm run dev:sample`                        | Dev server on the fictional fixture, for layout work                       |
-| `npm run check`                             | Validate the profile and images, report open items, typecheck              |
+| `npm run check`                             | Validate profile, images and version; report open items; typecheck         |
 | `npm run images -- "<folder>" <project-id>` | Web-sized copies of originals, plus the YAML to paste                      |
 | `npm run cv`                                | Build the CV variants → lint → DOCX                                        |
 | `npm run build`                             | Build the site to `dist/`, then check the built pages                      |

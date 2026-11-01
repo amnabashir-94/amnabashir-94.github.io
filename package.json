@@ -13,7 +13,7 @@
     "build": "astro build && tsx scripts/check-dist.ts",
     "build:sample": "node scripts/sample.mjs build",
     "preview": "astro preview",
-    "check": "tsx scripts/check-profile.ts && astro check",
+    "check": "tsx scripts/check-profile.ts && tsx scripts/check-version.ts && astro check",
     "images": "tsx scripts/import-images.ts",
     "cv:build": "tsx scripts/build-cv.ts",
     "cv:lint": "tsx scripts/lint-cv.ts",

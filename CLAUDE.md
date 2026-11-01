@@ -126,7 +126,7 @@
 
 ```bash
 npm ci                 # install (npm 11 skips esbuild's postinstall; harmless, tsx still runs)
-npm run check          # profile + images + gap report, then astro check
+npm run check          # profile + images + gap report, version agreement, then astro check
 npm run dev            # dev server on the real profile
 npm run dev:sample     # dev server on the fixture (generates its images first)
 npm run build          # astro build, then check-dist over the built pages
@@ -159,7 +159,9 @@ To run any script against the fixture, set `PROFILE_FILE=data/sample/profile.yam
 
 ## Versioning
 
-SemVer in `package.json`, mirrored by the top entry of `CHANGELOG.md`; bump _with_ the change.
+SemVer in `package.json`, mirrored by `package-lock.json` and the top entry of `CHANGELOG.md`; bump
+_with_ the change, using `npm version <x.y.z> --no-git-tag-version` so the lock follows.
+`scripts/check-version.ts` (in `npm run check`) fails if the three disagree.
 MAJOR = a change to published URLs or the profile schema's shape; MINOR = a new surface, generator or
 project; PATCH = fixes and content edits.
 
