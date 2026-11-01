@@ -34,12 +34,19 @@ export const SITE_URL_IS_PLACEHOLDER = SITE_URL.endsWith('.invalid');
 /**
  * Resolve a site-root-relative path to a href usable in markup.
  *
+ * A page path gains a trailing slash; a file path (its last segment has an extension) is left
+ * exactly as named. Pages are built as directories (`/about/index.html`), so `/about/` is their
+ * address: GitHub Pages answers `/about` with a redirect, and the sitemap lists `/about/`. Every
+ * canonical URL, link and JSON-LD URL goes through here, so they all agree with the sitemap;
+ * `check-dist` fails on a page link without the slash.
+ *
  * @param to - Path relative to the site root, e.g. `/projects` or `/cv/Amna-CV.pdf`.
- * @returns The path prefixed with {@link BASE_PATH}, e.g. `/portfolio/projects`.
+ * @returns The path prefixed with {@link BASE_PATH}, e.g. `/projects/` or `/cv/Amna-CV.pdf`.
  */
 export function path(to: string): string {
   const normalized = to.startsWith('/') ? to : `/${to}`;
-  return normalized === '/' ? `${BASE_PATH}/` : `${BASE_PATH}${normalized}`;
+  const isFile = /\.[a-z0-9]+$/i.test(normalized);
+  return `${BASE_PATH}${normalized}${isFile || normalized.endsWith('/') ? '' : '/'}`;
 }
 
 /**
@@ -48,8 +55,8 @@ export function path(to: string): string {
  * Required for canonical links, Open Graph tags, JSON-LD and sitemaps — relative paths are not
  * valid in any of those, and crawlers silently mis-resolve them.
  *
- * @param to - Path relative to the site root, e.g. `/cv.txt`.
- * @returns Absolute URL, e.g. `https://<username>.github.io/portfolio/cv.txt`.
+ * @param to - Path relative to the site root, e.g. `/cv.txt` or `/about`.
+ * @returns Absolute URL, e.g. `https://amnabashir-94.github.io/cv.txt` or `…/about/`.
  */
 export function absoluteUrl(to: string): string {
   return `${SITE_URL}${path(to)}`;
