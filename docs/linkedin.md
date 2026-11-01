@@ -95,7 +95,7 @@ project page, so nobody comparing the two finds a difference.
 **Dates:** 2025  
 **Link:** https://amnabashir-94.github.io/projects/covid-public-spaces-lahore
 
-How the COVID-19 pandemic changed the way people in four Lahore neighbourhoods use their parks, markets and mosques — and what it revealed about who those spaces were built for. Role: Sole researcher and author. Supervised by Dr. Maryam Siddiq, Department of Architecture, UET Lahore..
+How the COVID-19 pandemic changed the way people in four Lahore neighbourhoods use their parks, markets and mosques — and what it revealed about who those spaces were built for. Role: Sole researcher and author. Supervised by Dr. Maryam Siddiq, Department of Architecture, UET Lahore.
 
 ## 5. Education
 

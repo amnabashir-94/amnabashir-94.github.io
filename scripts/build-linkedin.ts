@@ -72,7 +72,8 @@ function main(): void {
         `**Dates:** ${valueOf(project.period) ?? '(confirm)'}  `,
         `**Link:** ${SITE_URL_IS_PLACEHOLDER ? '(project URL once the site is live)' : absoluteUrl(`/projects/${project.id}`)}`,
         '',
-        `${oneLine(project.summary)}${role ? ` Role: ${role}.` : ''}${project.credits ? ` ${oneLine(project.credits)}.` : ''}`,
+        // Credits are written as a sentence in the profile; strip its full stop before adding one.
+        `${oneLine(project.summary)}${role ? ` Role: ${role}.` : ''}${project.credits ? ` ${oneLine(project.credits).replace(/\.$/, '')}.` : ''}`,
       ].join('\n');
     })
     .join('\n\n');
