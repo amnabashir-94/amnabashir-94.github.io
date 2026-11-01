@@ -109,3 +109,39 @@ Commits carry her CV address, ar.amnabashir@gmail.com.
 interests, the LinkedIn address); course, event and membership years; the 2017–2019 gap; what "(CAD)"
 stands for; images from practice (with permission) and from the B.Arch thesis; her fieldwork
 photographs; her GitHub username, then publishing.
+
+## 2026-11-01 — the address, and getting ready to publish
+
+**Access without her password.** Amna's account added Nasik's (`nasikabbas`) as a collaborator with
+write access, and pushes go through his existing login. Her credentials never reach this machine,
+and the commits are still authored under her name. The cost is that repository and Pages settings
+stay owner-only, so those changes are made from her account.
+
+**The address.** Her username is `amnabashir-94`, so the site is `https://amnabashir-94.github.io/`.
+That one constant replaced the `.invalid` placeholder, and every surface the placeholder had kept
+the address out of picked it up: canonical URLs, the sitemap, `robots.txt`, the JSON-LD, the CV
+contact lines, the portfolio PDF's cover and closing sheet, and the LinkedIn pack. The five downloads
+were regenerated and read. Both CVs stay at two pages and the portfolio at four sheets, and the
+longer contact line fits on one line. `check-dist` was run in CI mode locally, where it refuses the
+placeholder, and passed.
+
+**What did not go to plan.**
+
+- **The repository was created as `amnabashir`**, not `amnabashir-94.github.io`. GitHub serves that
+  name as a project site under `/amnabashir/`. The repository was read through the API before
+  anything was changed, which caught it. The other option was to keep the name and set `BASE_PATH`,
+  but that gives a longer link that repeats her name and puts `robots.txt` where crawlers never read
+  it. Nasik chose to rename the repository to match the decision on record.
+- **The 0.2.0 release left `package-lock.json` at 0.1.0.** The bump was made by hand in
+  `package.json`. It was found by reading the lock while preparing this release, and a rule against
+  it already existed, so it got a mechanism, not another sentence: `scripts/check-version.ts` in
+  `npm run check`. It was proven by failing twice: against the 0.2.0 files (lock behind) and after
+  the 0.3.0 bump, before the changelog entry (changelog behind).
+- **The LinkedIn pack ended the thesis credits with "UET Lahore.."**, from a full stop in the data
+  plus one from the generator. It was found in the diff when the address changed.
+
+**Found and left open.** Canonical URLs, internal links and the JSON-LD write page paths without a
+trailing slash (`/about`), while the sitemap writes them with one (`/about/`). GitHub Pages answers
+the slash-less form with a redirect, so it works, but canonical and sitemap should agree. The fix is
+site-wide in `path()` (and `trailingSlash` in `astro.config.ts`), so it did not belong in the
+publishing change.

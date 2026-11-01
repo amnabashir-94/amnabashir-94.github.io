@@ -3,9 +3,10 @@
 The source of Amna Bashir's portfolio website, CVs and portfolio PDF — for job and scholarship
 applications — all generated from one data file so they always say the same thing.
 
-**Status: 0.2.0, not yet published.** Her profile is written from her CV and her M.Arch thesis; the
-site, a professional CV, an academic CV and the portfolio PDF all build from it. Project images from
-practice are next; then the site goes live on GitHub Pages.
+**Status: 0.3.0.** The site lives at **https://amnabashir-94.github.io/**, published from this
+repository by GitHub Pages. Her profile is written from her CV and her M.Arch thesis; the site, a
+professional CV, an academic CV and the portfolio PDF all build from it. Project images from practice
+are next.
 
 ## What this is
 

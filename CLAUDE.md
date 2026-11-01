@@ -26,8 +26,8 @@
   `private/thesis-review.md` and the public data stays neutral.
 - **Built ahead of its content.** The system was first built against the fictional fixture
   `data/sample/profile.yaml`, which stays as the worked example and test bed (`npm run dev:sample`).
-- **Not yet published.** No remote, no push. `SITE_URL` is the `.invalid` placeholder until her GitHub
-  username is known; CI refuses to deploy it.
+- **Hosted at https://amnabashir-94.github.io/** from the repository
+  `amnabashir-94/amnabashir-94.github.io` on her account (address set 2026-11-01, in 0.3.0).
 
 ## Decisions on record (2026-10-23, Nasik)
 
@@ -38,6 +38,10 @@
   without one.
 - **M.Arch:** Master of Architecture (not M.Phil, despite the thesis title page); thesis submitted,
   awaiting defence. Award year and CGPA to add once awarded.
+- **Repository access (2026-11-01):** Nasik's GitHub account (`nasikabbas`) is a collaborator with
+  write access, and pushes go through his own login; Amna's credentials are never stored on this
+  machine. Commits stay authored as Amna. Repository and Pages settings are owner-only, so changes
+  there are made from her account.
 - **Commit identity:** Amna's name and email, taken from her CV and confirmed with Nasik before the
   first commit. Nothing is committed under anyone else's identity.
 - **Private outputs (git-ignored `private/`):** the intake sheet, the applications pack and the thesis
@@ -165,15 +169,16 @@ _with_ the change, using `npm version <x.y.z> --no-git-tag-version` so the lock 
 MAJOR = a change to published URLs or the profile schema's shape; MINOR = a new surface, generator or
 project; PATCH = fixes and content edits.
 
-## Deploy (not yet set up)
+## Deploy
 
 Push to `main` → `.github/workflows/deploy.yml` → Pages (source: GitHub Actions). The deploy runs
 `npm run build`, so `check-dist` gates it; **in CI** it also refuses the placeholder origin and missing
 PDFs/DOCX. Gated: confirm before the first push; verify the live URL after each deploy — fetch the
 served page, not just the workflow status. A red post-deploy check means stop.
 
-**Before the first push:** set `SITE_URL` to `https://<username>.github.io` (`BASE_PATH` is already
-`''`); create the repository named exactly `<username>.github.io`; set Pages source to GitHub Actions.
+**Remote:** `origin` = `https://github.com/amnabashir-94/amnabashir-94.github.io.git`. Pages source
+is GitHub Actions. The repository name must stay exactly `amnabashir-94.github.io`: any other name
+makes GitHub serve it under a sub-path, and every link would then need `BASE_PATH`.
 
 ## Footguns
 

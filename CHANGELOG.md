@@ -4,6 +4,24 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versioning follows
 [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] — 2026-11-01
+
+The site's address is set, ready to publish on Amna's GitHub as a user site at
+https://amnabashir-94.github.io/.
+
+### Added
+
+- **The site's address** in canonical URLs, the sitemap, `robots.txt`, the JSON-LD and
+  `/llms.txt`, in the contact line of both CVs (PDF and DOCX), on the cover and closing sheet of the
+  portfolio PDF, and in the LinkedIn pack. All five downloads were regenerated.
+- `npm run check` now fails when `package.json`, `package-lock.json` and the top changelog entry
+  disagree on the version.
+
+### Fixed
+
+- The lock file still declared 0.1.0 after the 0.2.0 release.
+- The LinkedIn pack ended a project's credits with two full stops.
+
 ## [0.2.0] — 2026-10-23
 
 Amna's real profile, written from her CV and her M.Arch thesis, and the system extended for
