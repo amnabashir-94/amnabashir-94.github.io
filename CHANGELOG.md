@@ -4,6 +4,23 @@ All notable changes to this project are documented here. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versioning follows
 [SemVer](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.1] — 2026-11-01
+
+Fixes found while verifying the first deploy.
+
+### Fixed
+
+- **Page URLs end in a slash** everywhere: links, canonical URLs, JSON-LD, `llms.txt` and the LinkedIn
+  pack now match the sitemap and the address GitHub Pages serves, instead of costing a redirect.
+- **A build carries only the images it may publish.** Every image the build could reach was copied
+  into the site, used or not, so a local build contained the fixture's images, including its withheld
+  project's. A real build now reaches only real images, and a fixture build only the fixture's.
+
+### Added
+
+- The build now fails on any image in the site that no page uses, on a page link without its
+  trailing slash, and on a canonical URL that is missing from the sitemap.
+
 ## [0.3.0] — 2026-11-01
 
 The site's address is set, ready to publish on Amna's GitHub as a user site at

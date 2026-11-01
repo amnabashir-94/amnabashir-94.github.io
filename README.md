@@ -35,7 +35,8 @@ and the same words appear on the page, in the PDF, on the CV and on LinkedIn.
 **A firm's work is published only with the firm's agreement.** A professional project carries a
 `clearance` that must be confirmed before it appears anywhere. Until then it is validated, listed as a
 question, and absent from every page — and the build proves it by searching the built site for every
-withheld title.
+withheld title. Its images stay out of this public repository until then, and the build fails on any
+image the site would carry without a page using it.
 
 **Facts carry provenance.** Each claim is `verified`, `assumed` (an inference, with its reasoning
 recorded) or `missing`. Years, areas, results, registration numbers and clearances use a stricter

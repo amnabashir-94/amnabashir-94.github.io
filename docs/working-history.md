@@ -144,4 +144,51 @@ placeholder, and passed.
 trailing slash (`/about`), while the sitemap writes them with one (`/about/`). GitHub Pages answers
 the slash-less form with a redirect, so it works, but canonical and sitemap should agree. The fix is
 site-wide in `path()` (and `trailingSlash` in `astro.config.ts`), so it did not belong in the
-publishing change.
+publishing change. _(Fixed the same day in 0.3.1, below.)_
+
+## 2026-11-01 (later) — published, verified live, and two fixes
+
+**Published.** The repository was renamed to `amnabashir-94.github.io`, confirmed through the API
+(Pages serves from the root, builds through Actions, and `main` may deploy), then pushed. Both
+workflows passed. The live site was then checked against the local build file by file, not by the
+workflow's colour. 32 of 36 files were byte-identical: every page, the text surfaces, the
+stylesheet, the JPEG and WebP images, and the five downloads with their content types. The other
+four were the AVIF renditions of the site map: same dimensions, pixels within the noise of a lossy
+encode, and visually sound. sharp's AVIF encoder simply differs between Windows and the Linux
+runner. Screenshots of the live site, at phone and desktop widths in both schemes, were reviewed.
+
+**A promise the code did not keep.** The image loader's comment said only rendered images reach
+`dist/`, so an unpublished project's never would. The local build disproved it: all 15 fixture
+images were in it, among them the withheld fixture project's. A lazy `import.meta.glob` defers
+loading, not emitting, so every file it matches is copied into the site as an original. The live
+site was unaffected, because CI never generates the fixture's images and every committed image is
+published. But a firm's drawings committed before clearance would have been served at an unlinked,
+public address. The fix has three parts:
+
+- the glob moved to `image-loaders.ts` and excludes the fixture's folder;
+- a fixture build swaps in its own loader through an alias, keyed on the profile's `sample` flag;
+- `check-dist` fails on any image no built file names.
+
+The rule now written down is the honest one: the repository is public, so a project without
+clearance keeps its images out of it altogether.
+
+**Trailing slashes.** `path()` now gives page paths the slash the sitemap uses and leaves file names
+alone. `check-dist` fails on a slash-less page link, and on a canonical URL the sitemap does not list.
+
+**Guards proven by failing.** Run against the build that still had both defects, the new checks
+failed on 46 slash-less links, the 7 canonical URLs not in the sitemap (the home page's `/` already
+agreed), and exactly the 15 fixture images. After the fixes, the real build passed even with the
+fixture's images on disk. The fixture build carried none of Amna's images, and it flagged only its
+withheld project's image, as a warning, since it is never deployed.
+
+**What did not work.**
+
+- **The first proof of the image check proved nothing.** The stray image was a copy of her site map,
+  and the build passed. Rollup merges emitted files with identical bytes, and Astro removes the map's
+  original because only its resized versions are used, so the copy disappeared with it. A mirrored
+  re-encode, with different bytes, did reach `dist/`, and the build failed as it should. Recorded as a
+  footgun.
+- **Regenerating the downloads changed their bytes but not their content.** Both DOCX files had
+  identical document XML, and all three PDFs had identical content streams. Only the creation date
+  and document ID differed. The committed files were restored, so the live downloads stay the ones
+  already verified.

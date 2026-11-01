@@ -106,7 +106,9 @@
    presented as her own is the architecture equivalent of a fabricated credential.
 3. **Professional work publishes only with the firm's verified clearance.** `isPublishable()` is the
    single rule; every surface goes through it, and `check-dist` proves no withheld title appears on any
-   built page.
+   built page. **Until clearance, its images stay out of the repository**: the repository is public,
+   and every image the build can reach ships with the site whether a page uses it or not. Keep the
+   project `draft: true` with no images; `check-dist` fails on any image in `dist/` no page uses.
 4. **Drawings are never cropped.** `drawing`, `diagram` and `sheet` images render whole on a light mat,
    in both colour schemes, on the site and in the PDF.
 5. **Sample content can never ship.** `sample: true` puts a banner on every page; `check-dist` fails a
@@ -188,8 +190,20 @@ makes GitHub serve it under a sub-path, and every link would then need `BASE_PAT
   `node_modules/astro/bin/astro.mjs` with `process.execPath` directly.
 - **`<Picture>` wraps `<img>`**: a sized box must size the `<picture>` too, or `height: 100%` on the
   image resolves to nothing (found as grey bands under every card).
-- **`images.ts` uses `import.meta.glob`**, which exists only inside Vite. Node scripts must not import
-  it; the folder rule they need is `projectImageDir()` in `profile.ts`.
+- **`import.meta.glob` (in `src/lib/image-loaders.ts`) exists only inside Vite.** Node scripts must
+  not import it or `images.ts`; the folder rule they need is `projectImageDir()` in `files.ts`.
+- **Every file a glob matches is copied into `dist/`**, as an original, rendered or not; a lazy glob
+  defers loading, not emitting. So the glob decides what is published: the real build excludes
+  `src/assets/sample/`, and a fixture build swaps in `image-loaders.sample.ts` through an alias in
+  `astro.config.ts`, keyed on the profile's `sample` flag.
+- **Rollup merges emitted files with identical bytes.** A copy of a published image is absorbed into
+  it and never reaches `dist/` on its own. To test the unused-image check, use an image with
+  different bytes.
+- **Live AVIF files never match a local build byte for byte**: sharp's AVIF encoder output differs
+  between Windows and the Linux CI runner. When comparing the live site with `dist/`, compare AVIFs
+  by decoded pixels; every other file should be identical.
+- **Never hand-write an internal `href`.** `path()` adds the trailing slash a page URL needs (pages
+  are directories; Pages redirects `/about` to `/about/`) and leaves file names alone.
 - **Chrome embeds JPEG in a PDF as-is and re-encodes everything else losslessly**, so the portfolio
   route requests JPEG renditions; switching to PNG or WebP there multiplies the PDF size.
 - **`robots.txt` is inert on a project sub-path** — crawlers read it only at a domain root.
